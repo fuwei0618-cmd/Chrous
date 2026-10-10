@@ -1,10 +1,653 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>合唱團</title><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1"><link rel="icon" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Chorus"><meta name="theme-color" content="#ECE8E1">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@600&display=swap">
-<style>:root{--bg:#ECE8E1;--ink:#2B2724;--muted:#7B746C;--line:#D3CDC4}@media (prefers-color-scheme:dark){:root{--bg:#1D1C1A;--ink:#ECE7E0;--muted:#A39B91;--line:#3B3833}}
-html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;display:grid;place-items:center;padding:24px 16px;box-sizing:border-box}
-main{display:grid;justify-items:center;gap:14px;text-align:center;max-width:28em}svg{width:96px;height:96px;fill:var(--ink)}
-h1{font-family:"Noto Serif TC",serif;font-weight:600;font-size:30px;margin:6px 0 0;letter-spacing:.08em}p{margin:0;color:var(--muted);line-height:1.7}
-.tag{font-size:12px;letter-spacing:.2em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
-a{color:var(--ink);font-size:14px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:8px 16px;margin-top:10px}</style></head>
-<body><main><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="24" cy="48" r="9"/><path d="M7 78 C7 62 15 59 24 59 C33 59 41 62 41 78 Z"/><circle cx="76" cy="48" r="9"/><path d="M59 78 C59 62 67 59 76 59 C85 59 93 62 93 78 Z"/><g fill="#fff"><circle cx="50" cy="40" r="11.5"/><path d="M28 80 C28 58 38 53 50 53 C62 53 72 58 72 80Z"/></g><circle cx="50" cy="40" r="10.080000000000002"/><path d="M30.959999999999997 73.6 C30.959999999999997 55.68 39.92 52.32 50 52.32 C60.08 52.32 69.04 55.68 69.04 73.6 Z"/><path d="M60 8 L60 24 C58 22 52 22 51 26 C50 30 56 32 59 29 C61 28 62 26 62 24 L62 13 L70 15 L70 10 Z"/></svg><h1>合唱團</h1><span class="tag">製作中</span><p>合唱團的練唱進度、排練與演出行程。</p><a href="https://fuwei0618-cmd.github.io/Entry/map/">↖ 回到 Origina</a></main></body></html>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1"><link rel="icon" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Chorus"><meta name="theme-color" content="#F1EDEB"><script src="https://fuwei0618-cmd.github.io/Entry/sync/origina-sync.js" data-app="chorus" data-keys="chorus-app-v1" data-pos="br"></script>
+</head><body>
+<title>合唱團 App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: one-hand phone app, same frame as the street app. Sticky title bar, scrolling content, fixed bottom tab bar; edits open in bottom sheets. */
+:root{
+  --bg:#F1EDEB; --surface:#FCFAF9; --sunk:#E7E1DE; --ink:#2A1E22; --muted:#6E5F63; --line:#D9CFCC;
+  --accent:#8A2E4A; --accent-ink:#FFFFFF; --accent-soft:#F1DCE2;
+  --warn:#A83E1B; --warn-bg:#F6DED3; --ok:#27704A; --ok-bg:#D9EEE0;
+  --pS:#B3364A; --pS-bg:#F5DADF; --pA:#93690A; --pA-bg:#F5E8C4; --pT:#2D5E9E; --pT-bg:#DAE5F4; --pB:#2D7550; --pB-bg:#D8EEE1;
+  --display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
+  --body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  --r:14px; --tabh:64px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171113; --surface:#211A1C; --sunk:#100B0C; --ink:#EEE5E7; --muted:#A8979B; --line:#3A2F32;
+  --accent:#E58FA9; --accent-ink:#2A0E17; --accent-soft:#3D2028;
+  --warn:#F08A66; --warn-bg:#3B1E15; --ok:#6CC48F; --ok-bg:#163223;
+  --pS:#F0909F; --pS-bg:#3E1C22; --pA:#E6BF5C; --pA-bg:#3A2F14; --pT:#86AEE8; --pT-bg:#1B2A40; --pB:#76C99B; --pB-bg:#163223;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171113; --surface:#211A1C; --sunk:#100B0C; --ink:#EEE5E7; --muted:#A8979B; --line:#3A2F32;
+  --accent:#E58FA9; --accent-ink:#2A0E17; --accent-soft:#3D2028;
+  --warn:#F08A66; --warn-bg:#3B1E15; --ok:#6CC48F; --ok-bg:#163223;
+  --pS:#F0909F; --pS-bg:#3E1C22; --pA:#E6BF5C; --pA-bg:#3A2F14; --pT:#86AEE8; --pT-bg:#1B2A40; --pB:#76C99B; --pB-bg:#163223;
+  color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:0 calc(var(--tabh) + 32px + env(safe-area-inset-bottom,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 10px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.top h1{font-family:var(--display);font-weight:700;font-size:26px;margin:0;letter-spacing:.02em;display:flex;align-items:center;gap:6px;min-width:0}
+.top .back{border:0;background:none;color:var(--accent);font-size:24px;padding:0 6px 0 0;line-height:1}
+.top .sync{font-size:12px;color:var(--muted);white-space:nowrap}
+h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance}
+h2{font-size:20px} h3{font-size:16px}
+.sec{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.label{font-size:12px;color:var(--muted);letter-spacing:.08em}
+.muted{color:var(--muted)} .small{font-size:13px} .num{font-variant-numeric:tabular-nums}
+.pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list>li{border-top:1px solid var(--line)}
+.list>li:first-child{border-top:0}
+.row{display:flex;align-items:center;gap:10px;padding:11px 14px;min-height:48px;width:100%;background:none;border:0;text-align:left}
+.row .main{flex:1;min-width:0}
+.row .title{font-weight:500}
+.row .sub{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.accent{background:var(--accent-soft);color:var(--accent)}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.part{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none;background:var(--sunk);color:var(--muted)}
+.pS{background:var(--pS-bg);color:var(--pS)} .pA{background:var(--pA-bg);color:var(--pA)} .pT{background:var(--pT-bg);color:var(--pT)} .pB{background:var(--pB-bg);color:var(--pB)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:500;text-decoration:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.warn{color:var(--warn);border-color:var(--warn)}
+.btn.block{width:100%}
+.btn.sm{min-height:34px;padding:4px 12px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:default}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.ghost{background:none;border:0;color:var(--accent);font-weight:500;padding:8px 4px;min-height:40px}
+.banner{border-radius:var(--r);padding:10px 14px;font-size:14px}
+.banner.info{background:var(--accent-soft);color:var(--accent)}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.empty{padding:22px 16px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;text-align:left;width:100%}
+.hero .when{font-family:var(--display);font-size:28px;font-weight:700;line-height:1.15}
+.hero .what{font-size:17px;font-weight:500}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;margin:0}
+.kv dt{color:var(--muted);white-space:nowrap} .kv dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.seg{display:flex;background:var(--sunk);border-radius:999px;padding:3px;gap:2px;overflow-x:auto}
+.seg button{flex:1;border:0;background:none;border-radius:999px;padding:7px 10px;font-size:14px;color:var(--muted);text-align:center;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px;min-width:0;text-align:center}
+.tile b{display:block;font-size:20px;font-variant-numeric:tabular-nums;font-weight:700}
+.tile span{font-size:12px;color:var(--muted)}
+/* scenes */
+.blockhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 14px 6px;background:var(--sunk);font-size:13px;color:var(--muted)}
+.scene{display:grid;grid-template-columns:44px 1fr;gap:4px 10px;padding:12px 14px;width:100%;background:none;border:0;text-align:left}
+.scene .no{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;padding-top:2px}
+.scene .song{font-weight:700;font-family:var(--display);font-size:17px}
+.scene .meta{font-size:13px;color:var(--muted)}
+.scene .note{grid-column:2;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--sunk);border-radius:8px;padding:6px 10px}
+/* shots */
+.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.shot{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--sunk);aspect-ratio:3/4;padding:0}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .tag{position:absolute;left:4px;bottom:4px;font-size:11px;padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff}
+.bigshot{width:100%;border-radius:10px;border:1px solid var(--line);display:block}
+details.fold{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+details.fold>summary{padding:12px 14px;font-weight:500;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::after{content:"＋";color:var(--muted)}
+details.fold[open]>summary::after{content:"－"}
+details.fold>.inner{border-top:1px solid var(--line);padding:12px 14px}
+details.fold>.list{border:0;border-top:1px solid var(--line);border-radius:0 0 var(--r) var(--r)}
+.glabel{padding:8px 14px 4px;font-size:12px;color:var(--muted);letter-spacing:.08em;background:var(--sunk)}
+.search{width:100%;min-height:44px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.check{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:46px;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.link{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs nav{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);height:var(--tabh)}
+.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;color:var(--muted)}
+.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
+/* sheet */
+#sheet{position:fixed;inset:0;z-index:20}
+.sheet-bg{position:absolute;inset:0;background:rgba(20,10,13,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;display:flex;flex-direction:column;background:var(--bg);border-radius:18px 18px 0 0;max-width:640px;margin:0 auto;animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet>header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.sheet>header h2{font-size:18px;text-align:center;flex:1}
+.sheet-body{overflow-y:auto;padding:16px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));display:grid;gap:14px}
+.f{display:grid;gap:5px;min-width:0}
+.f>span{font-size:13px;color:var(--muted)}
+.f input,.f select,.f textarea{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.f textarea{min-height:76px;resize:vertical}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:380px){.f2{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,1fr)}.shots{grid-template-columns:repeat(2,1fr)}}
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.pick label{cursor:pointer;position:relative}
+.pick input{position:absolute;opacity:0;pointer-events:none}
+.pick span{display:inline-block;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.pick input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pick input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+fieldset{border:1px solid var(--line);border-radius:var(--r);padding:12px;margin:0;display:grid;gap:10px;min-width:0}
+legend{font-family:var(--display);font-weight:700;padding:0 6px}
+.prop{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.prop:first-of-type{border-top:0}
+.prop input{width:22px;height:22px;accent-color:var(--accent);flex:none;margin-top:2px}
+.prop .k{font-size:12px;color:var(--muted)}
+.prop .v{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.prop .old{font-size:12px;color:var(--muted);text-decoration:line-through;white-space:pre-wrap}
+.think{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:.25}to{opacity:1}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + 16px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;max-width:calc(100% - 32px)}
+#viewer{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.92);display:flex;flex-direction:column}
+#viewer .vt{display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;color:#fff;gap:8px}
+#viewer .vt button,#viewer .vt a{color:#fff;background:none;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;font-size:14px;text-decoration:none}
+#viewer .vi{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:0 8px calc(16px + env(safe-area-inset-bottom,0px))}
+#viewer img{max-width:100%;height:auto}
+</style>
+
+<div class="app">
+  <header class="top"><h1 id="title">演出</h1><span class="sync" id="sync">載入中…</span></header>
+  <main id="main"></main>
+</div>
+<div class="tabs"><nav aria-label="分頁">
+  <button data-tab="shows"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H4z"/><path d="M4 5l3 4M20 5l-3 4M9 20h6M12 16v4"/></svg>演出</button>
+  <button data-tab="reh"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8.5 14l2 2 4-4"/></svg>團練</button>
+  <button data-tab="songs"><svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>曲目</button>
+  <button data-tab="members"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2c2.4-.3 4.3 1.2 5 4.3"/></svg>成員</button>
+  <button data-tab="notices"><svg viewBox="0 0 24 24"><path d="M4 10v4l11 5V5z"/><path d="M15 9a3 3 0 0 1 0 6M7 14.5l1 4.5h3"/></svg>公告</button>
+</nav></div>
+<div id="sheet" hidden></div>
+<div id="viewer" hidden></div>
+<div id="toast" hidden role="status"></div>
+<input type="file" id="file" accept="image/*" multiple hidden>
+<input type="file" id="import" accept="application/json,.json" hidden>
+
+<script>
+(function(){
+"use strict";
+const COLS=['members','songs','shows','rehearsals','notices'];
+const PARTS=[['S','女高'],['A','女中'],['T','男高'],['B','男低']];
+const PARTNAME=Object.fromEntries(PARTS);
+const GROUPS=['桃劇坊','曜星','綻星','銀星'];
+const TITLES={shows:'演出',reh:'團練',songs:'曲目',members:'成員',notices:'公告'};
+const SHOT_TAGS=['截圖','場幕表','站位圖','通知','照片'];
+const INFO=[['call','集合'],['rehearsal','彩排'],['dress','服裝'],['bring','攜帶'],['transport','交通／停車'],['rest','休息區'],['meal','聚餐'],['notes','其他提醒']];
+const LS='chorus-app-v1';
+/* Snapshot of the cloud data (2026/10/10), shown only when this view cannot reach the cloud database. */
+const SNAP={};
+let S={}; COLS.forEach(c=>S[c]={});
+let db=null, assets=null, sample=null, canImages=false, downloads=null, mode='loading';
+let usingSnap=false;
+let tab='shows', openShow=null, showSeg='info', memFilter='全部', memQ='', songQ='';
+const mem={}; // assetId -> File picked in this view (sent to Claude without refetching)
+
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toLocaleDateString('sv-SE');
+const clone=o=>JSON.parse(JSON.stringify(o??{}));
+function parseD(s){if(!s)return null;const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function fmtD(s,y){const d=parseD(s);if(!d)return '日期未定';return (y?d.getFullYear()+'/':'')+(d.getMonth()+1)+'/'+d.getDate()+'（'+'日一二三四五六'[d.getDay()]+'）'}
+const arr=col=>Object.entries(S[col]).map(([id,v])=>({id,...v}));
+const byDate=(a,b)=>(a.date||'9999')<(b.date||'9999')?-1:(a.date||'9999')>(b.date||'9999')?1:0;
+/* On GitHub Pages there is no Claude runtime: data syncs through OneDrive (origina-sync.js) and stored screenshots ship in shots/. */
+const PAGES=/github\.io$/.test(location.hostname);
+const SHOT_FILES={c8e7b4fe67fe04b645d7cb8e6d052009:'01.png','8d8a99aeea4bac2f5bb174ffd762c23c':'02.png','9be563dea523edb5cd2e459f3a5dbba5':'03.png','63902affab81966d983d01791c84043a':'04.png',cd7d816b0c2df6cc7cd649118b4b5e38:'05.png','28cdec873847edee900203458d008e66':'06.png',faa772d13766d9a27ebbe929ba5aa748:'07.png','280770e5a7d2d4cd626069578dde9a3c':'08.png',fb2db3f5b3258533d7ab2c2dae32a7c6:'09.png',aedad3059f40070e5b281562cb50e164:'10.png',e233f16b43ad71c41641f3feb0876ca7:'scenes-pm.pdf'};
+const PAGES_SHOTS=false; // screenshots stay out of the public repo unless the user decides otherwise
+const NO_SHOTS=PAGES&&!PAGES_SHOTS;
+const blobUrl=id=>PAGES&&SHOT_FILES[id]?'shots/'+SHOT_FILES[id]:'/_blob/'+id;
+const linkHref=u=>{const m=/^\/_blob\/([0-9a-f]{32})$/.exec(u||'');return m?blobUrl(m[1]):u};
+const linkify=s=>esc(s).replace(/https?:\/\/[^\s<]+/g,u=>'<a class="link" href="'+u+'" target="_blank" rel="noopener">'+u+'</a>');
+function partChip(p){return p?'<span class="part p'+p+'" title="'+PARTNAME[p]+'">'+p+'</span>':'<span class="part">？</span>'}
+
+/* ---------- storage ---------- */
+function saveCache(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function loadCache(){try{const v=JSON.parse(localStorage.getItem(LS)||'null');if(v)COLS.forEach(c=>S[c]=v[c]||{})}catch(e){}}
+const wq={};
+function put(col,id,obj){
+  S[col][id]=obj; saveCache(); scheduleRender();
+  if(!db)return;
+  const k=col+'/'+id,q=wq[k]||(wq[k]={busy:false,val:undefined});
+  q.val=obj; if(!q.busy)flush(k,col,id);
+}
+async function flush(k,col,id){
+  const q=wq[k]; q.busy=true;
+  while(q.val!==undefined){
+    const v=q.val; q.val=undefined;
+    const go=()=>v===null?db.collection(col).doc(id).delete():db.collection(col).doc(id).set(v);
+    try{await go()}catch(e){try{await new Promise(r=>setTimeout(r,600+Math.random()*600));await go()}catch(e2){toast('沒有存到雲端（'+(e2.code||'連線問題')+'），稍後再按一次儲存')}}
+  }
+  q.busy=false;
+}
+function del(col,id){delete S[col][id];saveCache();scheduleRender();if(!db)return;const k=col+'/'+id,q=wq[k]||(wq[k]={busy:false,val:undefined});q.val=null;if(!q.busy)flush(k,col,id)}
+
+/* ---------- render ---------- */
+let rq=false;
+function scheduleRender(){if(rq)return;rq=true;requestAnimationFrame(()=>{rq=false;render()})}
+function render(){
+  const inShow=tab==='shows'&&openShow&&S.shows[openShow];
+  $('#title').innerHTML=inShow?'<button class="back" data-act="close-show" aria-label="回演出列表">‹</button><span>'+esc(S.shows[openShow].title||'演出')+'</span>':esc(TITLES[tab]);
+  $('#title').style.fontSize=inShow?'20px':'';
+  $('#sync').textContent=mode==='cloud'?'已同步':mode==='local'?(PAGES?'OneDrive 同步：看右下角雲朵':'只存在這台裝置'):'載入中…';
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
+  const f=document.activeElement&&document.activeElement.id;
+  const empty=COLS.every(c=>!Object.keys(S[c]).length);
+  if(mode==='loading'&&empty){$('#main').innerHTML='<div class="empty"><div class="think" style="justify-content:center"><span class="dot"></span>正在連上雲端資料…</div></div>';return}
+  const warn=mode==='local'&&!PAGES?'<div class="banner warn" style="margin-bottom:14px">這個畫面沒有連上雲端資料庫，'+(usingSnap?'現在顯示的是 10/10 的備份內容，':'')+'修改只會存在這台裝置。請從 claude.ai 或 Claude App 登入後開啟這個 app。</div>':'';
+  $('#main').innerHTML=warn+(inShow?vShow(openShow):{shows:vShows,reh:vReh,songs:vSongs,members:vMembers,notices:vNotices}[tab]());
+  if(f==='mem-q'||f==='song-q'){const i=$('#'+f);if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
+}
+
+/* ---------- 演出 list ---------- */
+function vShows(){
+  const all=arr('shows').sort(byDate), t=today();
+  const up=all.filter(s=>!s.date||s.date>=t), past=all.filter(s=>s.date&&s.date<t).reverse();
+  const nx=up[0];
+  let h='';
+  if(nx){
+    h+='<section class="sec"><span class="label">下一場</span>'+heroCard(nx)+'</section>';
+  }
+  h+='<section class="sec"><div class="sec-head"><h2>全部演出</h2><button class="btn sm primary" data-act="new-show">＋ 新增演出</button></div>';
+  if(!all.length)h+='<div class="empty">'+(PAGES?'還沒有資料。到 Claude 版的合唱團 App 按「下載備份」，再回來按下面的「匯入備份」。':'還沒有演出。按「新增演出」，再把 LINE 截圖丟進去整理。')+'</div>';
+  else h+='<ul class="list">'+[...up.slice(nx?1:0),...past].map(showRow).join('')+'</ul>';
+  h+='</section>';
+  h+='<div class="btns">'+(downloads?'<button class="btn sm" data-act="backup">下載備份</button>':'')+'<button class="btn sm" data-act="import">匯入備份</button></div>';
+  return h;
+}
+function heroCard(s){
+  const days=s.date?Math.round((parseD(s.date)-parseD(today()))/864e5):null;
+  return '<button class="hero" data-act="open-show" data-id="'+s.id+'">'
+    +'<div class="chips">'+(days===0?'<span class="chip accent">今天</span>':days>0?'<span class="chip accent">還有 '+days+' 天</span>':'')+'<span class="chip">'+(s.scenes||[]).length+' 個場幕</span><span class="chip">'+(s.cast||[]).length+' 人參與</span></div>'
+    +'<div class="when">'+esc(fmtD(s.date,true))+'</div><div class="what">'+esc(s.title||'未命名演出')+'</div>'
+    +'<dl class="kv">'+(s.place?'<dt>地點</dt><dd>'+esc(s.place)+'</dd>':'')+(s.call?'<dt>集合</dt><dd>'+esc(s.call)+'</dd>':'')+(s.time?'<dt>演出</dt><dd>'+esc(s.time)+'</dd>':'')+'</dl></button>';
+}
+function showRow(s){
+  const done=s.date&&s.date<today();
+  return '<li><button class="row" data-act="open-show" data-id="'+s.id+'"><div class="main"><div class="title">'+esc(s.title||'未命名演出')+'</div><div class="sub">'+esc(fmtD(s.date,true))+(s.place?' · '+esc(s.place):'')+'</div></div>'+(done?'<span class="chip ok">已演出</span>':'<span class="chip accent">準備中</span>')+'</button></li>';
+}
+
+/* ---------- 演出 detail ---------- */
+function vShow(id){
+  const s=S.shows[id];
+  const segs=[['info','行政'],['scenes','場幕表'],['cast','站位與名單'],['shots','截圖'],['after','演出後']];
+  let h='<div class="seg" role="group" aria-label="演出內容">'+segs.map(([k,l])=>'<button data-act="show-seg" data-k="'+k+'" aria-pressed="'+(showSeg===k)+'">'+l+'</button>').join('')+'</div><div style="height:14px"></div>';
+  h+={info:vInfo,scenes:vScenes,cast:vCast,shots:vShots,after:vAfter}[showSeg](s,id);
+  return h;
+}
+function aiBar(id){
+  if(!sample)return PAGES?'<div class="small muted">上傳截圖讓 Claude 整理，要從 Claude App 裡的合唱團開啟才能用。</div>':'';
+  return '<div class="panel" style="display:grid;gap:8px"><div class="small muted">把 LINE 截圖、場幕表丟進來，Claude 會讀出時間、地點、服裝、場幕等資料，你確認後再填進卡片。截圖會一起保存。</div><div class="btns"><button class="btn primary sm" data-act="ai-pick" data-id="'+id+'"'+(assets&&canImages?'':' disabled')+'>上傳截圖並整理</button>'+((S.shows[id].shots||[]).length&&canImages?'<button class="btn sm" data-act="ai-saved" data-id="'+id+'">重新整理已存截圖</button>':'')+'</div>'+(!assets?'<div class="small muted">只有可以編輯的人能上傳截圖。</div>':'')+'</div>';
+}
+function vInfo(s,id){
+  let h='<section class="sec">'+aiBar(id)+'</section>';
+  h+='<section class="sec"><div class="sec-head"><h2>基本資料</h2><button class="ghost" data-act="edit-show" data-id="'+id+'">編輯</button></div><div class="panel"><dl class="kv">'
+    +'<dt>日期</dt><dd>'+esc(fmtD(s.date,true))+'</dd>'
+    +'<dt>名稱</dt><dd>'+esc(s.title||'')+'</dd>'
+    +(s.place?'<dt>地點</dt><dd>'+esc(s.place)+'</dd>':'')
+    +(s.time?'<dt>演出時間</dt><dd>'+esc(s.time)+'</dd>':'')
+    +INFO.filter(([k])=>s[k]).map(([k,l])=>'<dt>'+l+'</dt><dd>'+linkify(s[k])+'</dd>').join('')
+    +'</dl></div></section>';
+  const links=s.links||[];
+  h+='<section class="sec"><div class="sec-head"><h2>連結</h2><button class="ghost" data-act="add-link" data-id="'+id+'">＋ 新增</button></div>';
+  h+=links.length?'<ul class="list">'+links.map((l,i)=>'<li class="row"><div class="main"><a class="link" href="'+esc(linkHref(l.url))+'" target="_blank" rel="noopener">'+esc(l.label||l.url)+'</a></div><button class="ghost" data-act="del-link" data-id="'+id+'" data-i="'+i+'" aria-label="刪除連結">✕</button></li>').join('')+'</ul>':'<div class="empty small">彩排影片、地圖、雲端譜都可以放這裡。</div>';
+  h+='</section>';
+  const ns=arr('notices').filter(n=>n.showId===id).sort(byDate);
+  h+='<section class="sec"><div class="sec-head"><h2>相關公告</h2><button class="ghost" data-act="new-notice" data-show="'+id+'">＋ 新增</button></div>';
+  h+=ns.length?'<ul class="list">'+ns.map(noticeRow).join('')+'</ul>':'<div class="empty small">團服取還、聚餐登記這類通知。</div>';
+  h+='</section>';
+  return h;
+}
+function vScenes(s,id){
+  const sc=s.scenes||[];
+  let h='<section class="sec">'+aiBar(id)+'</section><section class="sec"><div class="sec-head"><h2>場幕表</h2><button class="btn sm primary" data-act="edit-scene" data-id="'+id+'" data-i="-1">＋ 場幕</button></div>';
+  if(!sc.length)return h+'<div class="empty">還沒有場幕。可以上傳場幕表截圖讓 Claude 整理。</div></section>';
+  const blocks=[];sc.forEach((x,i)=>{const b=x.block||'';let g=blocks.find(g=>g.b===b);if(!g)blocks.push(g={b,items:[]});g.items.push([x,i])});
+  h+='<ul class="list">'+blocks.map(g=>(g.b?'<li class="blockhead"><span>'+esc(g.b)+'</span><span>'+g.items.length+' 幕</span></li>':'')+g.items.map(([x,i])=>{
+    const meta=[x.cast,x.area,x.instr,x.props].filter(Boolean).join(' · ');
+    return '<li><button class="scene" data-act="edit-scene" data-id="'+id+'" data-i="'+i+'"><span class="no">'+esc(x.no||'')+'</span><div><div class="song">'+esc(x.song||x.name||'—')+'</div><div class="meta">'+(x.name&&x.song?esc(x.name)+' · ':'')+esc(meta)+'</div></div>'+(x.note?'<div class="note">'+esc(x.note)+'</div>':'')+'</button></li>';
+  }).join('')).join('')+'</ul></section>';
+  return h;
+}
+function vCast(s,id){
+  const cast=(s.cast||[]).filter(m=>S.members[m]);
+  const seat=(s.shots||[]).filter(x=>x.tag==='站位圖');
+  let h='<section class="sec"><div class="sec-head"><h2>站位圖</h2></div>';
+  h+=NO_SHOTS&&seat.length?'<div class="empty small">站位圖存在 Claude 版的合唱團 App 裡。</div>':seat.length?seat.map(x=>'<button class="shot" style="aspect-ratio:auto;width:100%" data-act="view-shot" data-id="'+id+'" data-a="'+x.id+'"><img src="'+blobUrl(x.id)+'" alt="站位圖" loading="lazy"></button>').join(''):'<div class="empty small">在「截圖」把一張圖標成「站位圖」，就會顯示在這裡。</div>';
+  h+='</section>';
+  const cnt={S:0,A:0,T:0,B:0,'':0};cast.forEach(m=>cnt[S.members[m].part||'']++);
+  h+='<section class="sec"><div class="sec-head"><h2>參與名單 '+cast.length+' 人</h2><button class="ghost" data-act="pick-cast" data-id="'+id+'">選擇</button></div>';
+  h+='<div class="tiles">'+PARTS.map(([p,n])=>'<div class="tile"><b class="num">'+cnt[p]+'</b><span>'+n+' '+p+'</span></div>').join('')+'</div>';
+  h+=cast.length?'<ul class="list">'+PARTS.concat([['','未分聲部']]).map(([p,n])=>{const ms=cast.filter(m=>(S.members[m].part||'')===p);return ms.length?'<li class="glabel">'+n+'</li>'+ms.map(m=>'<li class="row">'+partChip(p)+'<div class="main">'+esc(S.members[m].name)+'</div></li>').join(''):''}).join('')+'</ul>':'<div class="empty small">還沒選參與的成員。</div>';
+  h+='</section>';
+  return h;
+}
+function vShots(s,id){
+  const sh=s.shots||[];
+  let h='<section class="sec">'+aiBar(id)+'</section><section class="sec"><div class="sec-head"><h2>原始截圖 '+sh.length+' 張</h2>'+(assets?'<button class="ghost" data-act="add-shots" data-id="'+id+'">＋ 只上傳</button>':'')+'</div>';
+  h+=NO_SHOTS&&sh.length?'<div class="empty small">這 '+sh.length+' 張截圖存在 Claude 版的合唱團 App 裡，GitHub 版不放截圖（倉庫是公開的）。</div>':sh.length?'<div class="shots">'+sh.map(x=>'<button class="shot" data-act="view-shot" data-id="'+id+'" data-a="'+x.id+'"><img src="'+blobUrl(x.id)+'" alt="'+esc(x.tag||'截圖')+'" loading="lazy"><span class="tag">'+esc(x.tag||'截圖')+'</span></button>').join('')+'</div>':'<div class="empty small">還沒有截圖。</div>';
+  return h+'</section>';
+}
+function vAfter(s,id){
+  return '<section class="sec"><div class="sec-head"><h2>演出後</h2><button class="ghost" data-act="edit-after" data-id="'+id+'">編輯</button></div>'
+    +'<div class="panel"><dl class="kv"><dt>心得</dt><dd>'+(s.review?linkify(s.review):'<span class="muted">還沒寫</span>')+'</dd><dt>照片／影片</dt><dd>'+(s.media?linkify(s.media):'<span class="muted">—</span>')+'</dd></dl></div></section>'
+    +'<section class="sec"><button class="btn warn sm" data-act="del-show" data-id="'+id+'">刪除這場演出</button></section>';
+}
+
+/* ---------- 團練 ---------- */
+function vReh(){
+  const all=arr('rehearsals').sort(byDate).reverse();
+  let h='<section class="sec"><div class="sec-head"><h2>團練紀錄</h2><button class="btn sm primary" data-act="edit-reh" data-id="">＋ 新增</button></div>';
+  if(!all.length)return h+'<div class="empty">還沒有團練紀錄。</div></section>';
+  h+='<ul class="list">'+all.map(r=>{const songs=(r.songs||[]).map(x=>S.songs[x]&&S.songs[x].title).filter(Boolean);
+    return '<li><button class="row" data-act="edit-reh" data-id="'+r.id+'"><div class="main"><div class="title">'+esc(fmtD(r.date,true))+(r.time?' '+esc(r.time):'')+'</div><div class="sub">'+(songs.length?esc(songs.join('、')):'')+(r.notes?(songs.length?'<br>':'')+esc(r.notes.split('\n')[0]):'')+'</div></div><div class="chips">'+(r.duty?'<span class="chip">值日 '+esc(r.duty)+'</span>':'')+((r.present||[]).length?'<span class="chip ok">'+r.present.length+' 人</span>':'')+'</div></button></li>'}).join('')+'</ul>';
+  return h+'</section>';
+}
+/* ---------- 曲目 ---------- */
+function vSongs(){
+  const q=songQ.trim().toLowerCase();
+  const all=arr('songs').sort((a,b)=>(a.title||'').localeCompare(b.title||'','zh-Hant'));
+  const shown=all.filter(s=>!q||[s.title,s.sub,s.note].join(' ').toLowerCase().includes(q));
+  const used={};arr('shows').forEach(sh=>(sh.scenes||[]).forEach(x=>(x.songIds||[]).forEach(i=>{(used[i]=used[i]||new Set).add(sh.id)})));
+  let h='<section class="sec"><input class="search" id="song-q" type="search" placeholder="搜尋歌名" value="'+esc(songQ)+'" aria-label="搜尋歌名"></section>';
+  h+='<section class="sec"><div class="sec-head"><h2>'+all.length+' 首</h2><button class="btn sm primary" data-act="edit-song" data-id="">＋ 新增</button></div>';
+  if(!shown.length)return h+'<div class="empty">'+(all.length?'沒有符合的歌。':'還沒有曲目。')+'</div></section>';
+  h+='<ul class="list">'+shown.map(s=>'<li><button class="row" data-act="edit-song" data-id="'+s.id+'"><div class="main"><div class="title">'+esc(s.title)+'</div>'+(s.sub||s.note?'<div class="sub">'+esc(s.sub||s.note)+'</div>':'')+'</div><div class="chips">'+(used[s.id]?'<span class="chip accent">演出 '+used[s.id].size+' 場</span>':'')+(s.score?'<span class="chip">譜</span>':'')+(s.audio?'<span class="chip">音檔</span>':'')+'</div></button></li>').join('')+'</ul>';
+  return h+'<p class="small muted">譜建議繼續放在 iPad 的譜 app，這裡存連結就好。</p></section>';
+}
+/* ---------- 成員 ---------- */
+function vMembers(){
+  const all=arr('members').sort((a,b)=>(a.part||'Z').localeCompare(b.part||'Z')||(a.name||'').localeCompare(b.name||'','zh-Hant'));
+  const q=memQ.trim();
+  const cnt={S:0,A:0,T:0,B:0};all.forEach(m=>{if(cnt[m.part]!=null)cnt[m.part]++});
+  const filters=['全部',...PARTS.map(p=>p[0]),...GROUPS,'幹部'];
+  const shown=all.filter(m=>(memFilter==='全部'||m.part===memFilter||(m.groups||[]).includes(memFilter)||(memFilter==='幹部'&&m.role))&&(!q||(m.name+' '+(m.role||'')+' '+(m.nick||'')).includes(q)));
+  let h='<section class="sec"><div class="tiles">'+PARTS.map(([p,n])=>'<div class="tile"><b class="num">'+cnt[p]+'</b><span>'+n+' '+p+'</span></div>').join('')+'</div></section>';
+  h+='<section class="sec"><input class="search" id="mem-q" type="search" placeholder="搜尋名字或職務" value="'+esc(memQ)+'" aria-label="搜尋成員"><div class="seg" role="group" aria-label="篩選">'+filters.map(f=>'<button data-act="mem-filter" data-k="'+f+'" aria-pressed="'+(memFilter===f)+'">'+(PARTNAME[f]||f)+'</button>').join('')+'</div></section>';
+  h+='<section class="sec"><div class="sec-head"><h2>'+shown.length+' 人</h2><button class="btn sm primary" data-act="edit-member" data-id="">＋ 新增</button></div>';
+  if(!shown.length)return h+'<div class="empty">沒有符合的成員。</div></section>';
+  h+='<ul class="list">'+shown.map(m=>'<li><button class="row" data-act="edit-member" data-id="'+m.id+'">'+partChip(m.part)+'<div class="main"><div class="title">'+esc(m.name)+(m.nick?' <span class="muted small">'+esc(m.nick)+'</span>':'')+'</div><div class="sub">'+esc([(m.groups||[]).join('、'),m.role].filter(Boolean).join(' · '))+'</div></div>'+(m.size?'<span class="chip">'+esc(m.size)+'</span>':'')+'</button></li>').join('')+'</ul>';
+  return h+'</section>';
+}
+/* ---------- 公告 ---------- */
+function noticeRow(n){return '<li><button class="row" data-act="edit-notice" data-id="'+n.id+'"><div class="main"><div class="title">'+esc(n.title||'公告')+'</div><div class="sub pre">'+esc((n.body||'').slice(0,80))+'</div></div>'+(n.date?'<span class="chip">'+esc(fmtD(n.date))+'</span>':'')+'</button></li>'}
+function vNotices(){
+  const all=arr('notices').sort(byDate).reverse();
+  let h='<section class="sec"><div class="sec-head"><h2>公告與事務</h2><button class="btn sm primary" data-act="new-notice" data-show="">＋ 新增</button></div>';
+  if(!all.length)return h+'<div class="empty">還沒有公告。</div></section>';
+  const groups={};all.forEach(n=>{const k=n.showId&&S.shows[n.showId]?n.showId:'';(groups[k]=groups[k]||[]).push(n)});
+  h+='<ul class="list">'+Object.entries(groups).map(([k,ns])=>'<li class="glabel">'+(k?esc(S.shows[k].title):'一般')+'</li>'+ns.map(noticeRow).join('')).join('')+'</ul>';
+  return h+'</section>';
+}
+
+/* ---------- sheets ---------- */
+function sheet(title,body,onSave,extra){
+  $('#sheet').innerHTML='<div class="sheet-bg" data-act="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><header><button class="ghost" data-act="close">取消</button><h2>'+esc(title)+'</h2>'+(onSave?'<button class="ghost" data-act="save" style="font-weight:700">儲存</button>':'<span style="width:44px"></span>')+'</header><div class="sheet-body">'+body+'</div></div>';
+  $('#sheet').hidden=false; sheetSave=onSave; sheetExtra=extra||{};
+  const first=$('#sheet .sheet-body input:not([type=checkbox]),#sheet .sheet-body textarea'); if(first&&!first.value)setTimeout(()=>first.focus(),50);
+}
+let sheetSave=null, sheetExtra={};
+function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML='';sheetSave=null;sheetExtra={}}
+const val=n=>{const e=$('#sheet [name="'+n+'"]');return e?e.value.trim():''};
+const checked=n=>[...document.querySelectorAll('#sheet [name="'+n+'"]:checked')].map(e=>e.value);
+const fld=(n,l,v,type)=>'<label class="f"><span>'+l+'</span>'+(type==='area'?'<textarea name="'+n+'">'+esc(v)+'</textarea>':'<input name="'+n+'" type="'+(type||'text')+'" value="'+esc(v)+'">')+'</label>';
+const picks=(n,opts,sel,type)=>'<div class="pick">'+opts.map(([v,l])=>'<label><input type="'+(type||'checkbox')+'" name="'+n+'" value="'+esc(v)+'"'+((Array.isArray(sel)?sel.includes(v):sel===v)?' checked':'')+'><span>'+esc(l)+'</span></label>').join('')+'</div>';
+function memberChecks(n,sel){
+  const ms=arr('members');
+  return PARTS.concat([['','未分聲部']]).map(([p,l])=>{const g=ms.filter(m=>(m.part||'')===p).sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh-Hant'));return g.length?'<fieldset><legend>'+l+'</legend>'+picks(n,g.map(m=>[m.id,m.name]),sel)+'</fieldset>':''}).join('')||'<div class="empty small">先到「成員」新增成員。</div>';
+}
+
+function editShow(id){
+  const s=id?S.shows[id]:{};
+  sheet(id?'編輯演出':'新增演出',
+    fld('title','名稱',s.title)+'<div class="f2">'+fld('date','日期',s.date,'date')+fld('time','演出時間',s.time)+'</div>'+fld('place','地點',s.place)
+    +INFO.map(([k,l])=>fld(k,l,s[k],'area')).join(''),
+    ()=>{const t=val('title');if(!t){toast('請填名稱');return false}
+      const n={...clone(s),title:t,date:val('date'),time:val('time'),place:val('place')};INFO.forEach(([k])=>n[k]=val(k));
+      const nid=id||uid('show');if(!id){n.scenes=[];n.cast=[];n.shots=[];n.links=[];n.ts=Date.now()}
+      put('shows',nid,n);if(!id){openShow=nid;showSeg='info'}});
+}
+function editScene(id,i){
+  const s=S.shows[id],x=i>=0?s.scenes[i]:{block:(s.scenes||[]).slice(-1)[0]?.block||''};
+  const songs=arr('songs').sort((a,b)=>(a.title||'').localeCompare(b.title||'','zh-Hant'));
+  sheet(i>=0?'編輯場幕':'新增場幕',
+    fld('block','段落（例：上午 記者會 10:30）',x.block)+'<div class="f2">'+fld('no','場幕編號',x.no)+fld('name','場幕名稱',x.name)+'</div>'+fld('song','曲目／演出內容',x.song)
+    +(songs.length?'<fieldset><legend>對應曲目庫</legend>'+picks('songIds',songs.map(s=>[s.id,s.title]),x.songIds||[])+'</fieldset>':'')
+    +'<div class="f2">'+fld('cast','演出人員',x.cast)+fld('area','區域',x.area)+'</div><div class="f2">'+fld('instr','樂器',x.instr)+fld('props','道具／設備',x.props)+'</div>'+fld('note','走位與備註',x.note,'area')
+    +(i>=0?'<div class="btns"><button class="btn sm" data-act="move-scene" data-d="-1">往上移</button><button class="btn sm" data-act="move-scene" data-d="1">往下移</button><button class="btn sm warn" data-act="del-scene">刪除這幕</button></div>':''),
+    ()=>{const n={block:val('block'),no:val('no'),name:val('name'),song:val('song'),songIds:checked('songIds'),cast:val('cast'),area:val('area'),instr:val('instr'),props:val('props'),note:val('note')};
+      const sh=clone(s);sh.scenes=sh.scenes||[];if(i>=0)sh.scenes[i]=n;else sh.scenes.push(n);put('shows',id,sh)},{show:id,i});
+}
+function editMember(id){
+  const m=id?S.members[id]:{};
+  sheet(id?'編輯成員':'新增成員',
+    '<div class="f2">'+fld('name','名字',m.name)+fld('nick','暱稱／英文名',m.nick)+'</div>'
+    +'<div class="f"><span>聲部</span>'+picks('part',[...PARTS.map(([p,n])=>[p,n+' '+p]),['','未定']],m.part||'','radio')+'</div>'
+    +'<div class="f"><span>所屬團</span>'+picks('groups',GROUPS.map(g=>[g,g]),m.groups||[])+'</div>'
+    +'<div class="f2">'+fld('role','職務（老師、幹部、團服…）',m.role)+fld('size','團服尺寸',m.size)+'</div>'
+    +fld('phone','聯絡方式',m.phone)+fld('note','備註',m.note,'area')
+    +(id?'<button class="btn sm warn" data-act="del-member" data-id="'+id+'">刪除成員</button>':''),
+    ()=>{const nm=val('name');if(!nm){toast('請填名字');return false}
+      put('members',id||uid('m'),{...clone(m),name:nm,nick:val('nick'),part:checked('part')[0]||'',groups:checked('groups'),role:val('role'),size:val('size'),phone:val('phone'),note:val('note'),ts:m.ts||Date.now()})});
+}
+function editSong(id){
+  const s=id?S.songs[id]:{};
+  sheet(id?'編輯曲目':'新增曲目',
+    fld('title','歌名',s.title)+fld('sub','組曲內容／版本（例：女生齊唱版）',s.sub)+fld('score','譜的連結',s.score,'url')+fld('audio','練唱音檔／影片連結',s.audio,'url')+fld('note','備註（調性、聲部提醒）',s.note,'area')
+    +(id?'<button class="btn sm warn" data-act="del-song" data-id="'+id+'">刪除曲目</button>':''),
+    ()=>{const t=val('title');if(!t){toast('請填歌名');return false}put('songs',id||uid('s'),{...clone(s),title:t,sub:val('sub'),score:val('score'),audio:val('audio'),note:val('note'),ts:s.ts||Date.now()})});
+}
+function editReh(id){
+  const r=id?S.rehearsals[id]:{date:today()};
+  const songs=arr('songs').sort((a,b)=>(a.title||'').localeCompare(b.title||'','zh-Hant'));
+  sheet(id?'編輯團練':'新增團練',
+    '<div class="f2">'+fld('date','日期',r.date,'date')+fld('time','時間',r.time)+'</div><div class="f2">'+fld('place','地點',r.place)+fld('duty','值日生',r.duty)+'</div>'
+    +(songs.length?'<fieldset><legend>練了哪幾首</legend>'+picks('songs',songs.map(s=>[s.id,s.title]),r.songs||[])+'</fieldset>':'')
+    +fld('notes','內容與注意事項',r.notes,'area')
+    +'<details class="fold"><summary>出席 '+((r.present||[]).length)+' 人</summary><div class="inner" style="display:grid;gap:10px">'+memberChecks('present',r.present||[])+'</div></details>'
+    +(id?'<button class="btn sm warn" data-act="del-reh" data-id="'+id+'">刪除紀錄</button>':''),
+    ()=>{put('rehearsals',id||uid('r'),{...clone(r),date:val('date'),time:val('time'),place:val('place'),duty:val('duty'),songs:checked('songs'),notes:val('notes'),present:checked('present'),ts:r.ts||Date.now()})});
+}
+function editNotice(id,showId){
+  const n=id?S.notices[id]:{date:today(),showId:showId||''};
+  const shows=arr('shows').sort(byDate).reverse();
+  sheet(id?'編輯公告':'新增公告',
+    fld('title','標題',n.title)+fld('date','日期',n.date,'date')
+    +'<label class="f"><span>屬於哪場演出</span><select name="showId"><option value="">一般公告</option>'+shows.map(s=>'<option value="'+s.id+'"'+(n.showId===s.id?' selected':'')+'>'+esc(s.title)+'</option>').join('')+'</select></label>'
+    +fld('body','內容',n.body,'area')
+    +(id?'<button class="btn sm warn" data-act="del-notice" data-id="'+id+'">刪除公告</button>':''),
+    ()=>{const t=val('title');if(!t){toast('請填標題');return false}put('notices',id||uid('n'),{...clone(n),title:t,date:val('date'),showId:val('showId'),body:val('body'),ts:n.ts||Date.now()})});
+}
+
+/* ---------- screenshots + Claude ---------- */
+let pickTarget=null, pickAi=false;
+$('#file').addEventListener('change',async e=>{
+  const files=[...e.target.files];e.target.value='';
+  if(!files.length||!pickTarget)return;
+  const id=pickTarget, ai=pickAi;
+  toast('上傳 '+files.length+' 張截圖…');
+  const ids=[];
+  for(const f of files){
+    try{const r=await assets.upload(f,f.type?undefined:{type:'image/png'});ids.push(r.id);mem[r.id]=f}
+    catch(err){toast(err.code==='quota_exceeded'?'空間不夠了':'有一張沒上傳成功（'+(err.code||'錯誤')+'）')}
+  }
+  if(ids.length){const sh=clone(S.shows[id]);sh.shots=[...(sh.shots||[]),...ids.map(x=>({id:x,tag:'截圖'}))];put('shows',id,sh);toast('已保存 '+ids.length+' 張截圖')}
+  if(ai&&ids.length)aiRun(id,ids.map(x=>mem[x]));
+});
+$('#import').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let data;try{data=JSON.parse(await f.text())}catch(_){toast('這不是合唱團的備份檔');return}
+  if(!data||!COLS.some(c=>data[c]&&typeof data[c]==='object')){toast('這不是合唱團的備份檔');return}
+  const n=COLS.reduce((a,c)=>a+Object.keys(data[c]||{}).length,0);
+  if(!confirm('匯入 '+n+' 筆資料？同名的資料會被備份檔取代。'))return;
+  COLS.forEach(c=>Object.entries(data[c]||{}).forEach(([id,v])=>put(c,id,v)));
+  usingSnap=false;toast('已匯入 '+n+' 筆');
+});
+async function savedBlobs(id){
+  const out=[];
+  for(const x of (S.shows[id].shots||[])){
+    if(mem[x.id]){out.push(mem[x.id]);continue}
+    try{const r=await fetch(blobUrl(x.id));if(r.ok)out.push(await r.blob())}catch(e){}
+  }
+  return out;
+}
+const AI_FIELDS=[['title','名稱'],['date','日期'],['time','演出時間'],['place','地點'],...INFO];
+async function aiRun(id,blobs){
+  if(!blobs.length){toast('讀不到截圖，請用「上傳截圖並整理」重新選檔');return}
+  const lim=await sample.limits().catch(()=>null);
+  const max=lim&&lim.images?lim.images.maxCount:0;
+  if(!max){toast('這個檢視無法傳圖片給 Claude');return}
+  const batch=blobs.slice(0,max);
+  const ctl=new AbortController();
+  sheet('Claude 整理中','<div class="think"><span class="dot"></span><span id="ai-msg">正在讀 '+batch.length+' 張截圖…（約半分鐘到一分鐘）</span></div>'+(blobs.length>max?'<div class="banner warn">一次最多 '+max+' 張，這次先整理前 '+max+' 張。</div>':'')+'<button class="btn" data-act="ai-stop">停止</button>',null,{ctl});
+  const s=S.shows[id];
+  const cur={};AI_FIELDS.forEach(([k])=>cur[k]=s[k]||'');
+  const songs=arr('songs').map(x=>x.title);
+  const prompt='你是合唱團的行政小幫手。附上的圖片是合唱團 LINE 群組的截圖、通知、場幕表或站位圖，都和同一場演出有關。請把裡面的資訊整理成 JSON，用繁體中文，保留原文的時間、小節號（例如 #116）和人名，不要編造圖片裡沒有的內容。\n\n'
+    +'目前卡片內容（今天是 '+today()+'）：\n'+JSON.stringify(cur)+'\n已有場幕數：'+(s.scenes||[]).length+'\n曲目庫：'+JSON.stringify(songs)+'\n\n'
+    +'只回 JSON，格式：\n{"fields":{"title":"","date":"YYYY-MM-DD","time":"演出時間","place":"","call":"集合時間與地點","rehearsal":"彩排時間地點","dress":"服裝","bring":"要帶的東西（例如樂譜）","transport":"交通與停車","rest":"休息區","meal":"聚餐","notes":"其他提醒"},'
+    +'"scenes":[{"block":"段落名，例如 上午 記者會 10:30-10:40 悅心亭前","no":"1-1","name":"場幕名稱","song":"曲目","cast":"演出人員或團體","area":"區域","instr":"樂器","props":"道具設備","note":"走位與備註，保留小節號"}],'
+    +'"notices":[{"title":"","body":""}],"links":[{"label":"","url":""}],"songs":["曲目庫沒有的新歌名"],"shotTags":["每張圖的類型，依序，只能是：截圖、場幕表、站位圖、通知、照片"]}\n'
+    +'fields 只放圖片裡有提到的欄位，沒有的就省略。scenes 只在有場幕表時才填，每一幕一筆。notices 放與演出相關但不屬於上面欄位的事務（例如團服取還、聚餐登記）。';
+  try{
+    const out=await sample.json(prompt,{images:batch,signal:ctl.signal,onText:()=>{const m=$('#ai-msg');if(m)m.textContent='整理中…'}});
+    if(!$('#sheet').hidden)closeSheet();
+    aiReview(id,out||{},blobs.length);
+  }catch(e){
+    if(!$('#sheet').hidden)closeSheet();
+    if(e.code==='cancelled')return;
+    if(e.code==='not_granted'){toast('沒有允許使用 Claude');return}
+    if(e.code==='rate_limited'){toast('Claude 忙碌中，稍等一下再試');return}
+    toast('整理失敗（'+(e.code||'錯誤')+'），截圖已經存好了');
+  }
+}
+function aiReview(id,out,nShots){
+  const s=S.shows[id];
+  const f=out.fields||{};
+  const props=AI_FIELDS.filter(([k])=>f[k]&&String(f[k]).trim()&&String(f[k]).trim()!==(s[k]||'').trim());
+  const scenes=Array.isArray(out.scenes)?out.scenes.filter(x=>x&&(x.song||x.name)):[];
+  const notices=Array.isArray(out.notices)?out.notices.filter(x=>x&&(x.title||x.body)):[];
+  const links=Array.isArray(out.links)?out.links.filter(x=>x&&/^https?:\/\//.test(x.url||'')&&!(s.links||[]).some(l=>l.url===x.url)):[];
+  const have=new Set(arr('songs').map(x=>x.title));
+  const newSongs=Array.isArray(out.songs)?[...new Set(out.songs.map(String).map(x=>x.trim()).filter(x=>x&&!have.has(x)))]:[];
+  if(!props.length&&!scenes.length&&!notices.length&&!links.length&&!newSongs.length){toast('截圖裡沒有找到新的資料');return}
+  let b='<p class="small muted">勾選要填進卡片的項目。有內容的欄位會被取代，舊內容以刪除線顯示。</p>';
+  if(props.length)b+='<fieldset><legend>基本資料</legend>'+props.map(([k,l])=>'<label class="prop"><input type="checkbox" name="ai-f" value="'+k+'" checked><div><div class="k">'+l+'</div><div class="v">'+esc(f[k])+'</div>'+(s[k]?'<div class="old">'+esc(s[k])+'</div>':'')+'</div></label>').join('')+'</fieldset>';
+  if(scenes.length)b+='<fieldset><legend>場幕 '+scenes.length+' 幕</legend><label class="prop"><input type="checkbox" name="ai-sc" value="1" checked><div><div class="v">'+scenes.map(x=>esc((x.no?x.no+' ':'')+(x.song||x.name))).join('、')+'</div>'+((s.scenes||[]).length?'<div class="k">會加在現有 '+s.scenes.length+' 幕後面</div>':'')+'</div></label></fieldset>';
+  if(notices.length)b+='<fieldset><legend>相關公告</legend>'+notices.map((n,i)=>'<label class="prop"><input type="checkbox" name="ai-n" value="'+i+'" checked><div><div class="k">'+esc(n.title||'公告')+'</div><div class="v">'+esc(n.body||'')+'</div></div></label>').join('')+'</fieldset>';
+  if(links.length)b+='<fieldset><legend>連結</legend>'+links.map((l,i)=>'<label class="prop"><input type="checkbox" name="ai-l" value="'+i+'" checked><div><div class="k">'+esc(l.label||'')+'</div><div class="v">'+esc(l.url)+'</div></div></label>').join('')+'</fieldset>';
+  if(newSongs.length)b+='<fieldset><legend>加入曲目庫</legend>'+picks('ai-s',newSongs.map(x=>[x,x]),newSongs)+'</fieldset>';
+  sheet('確認整理結果',b,()=>{
+    const sh=clone(S.shows[id]);
+    checked('ai-f').forEach(k=>sh[k]=String(f[k]).trim());
+    if(checked('ai-sc').length){
+      const added=checked('ai-s');
+      const ids={};arr('songs').forEach(x=>ids[x.title]=x.id);
+      added.forEach(t=>{const nid=uid('s');ids[t]=nid;put('songs',nid,{title:t,ts:Date.now()})});
+      sh.scenes=[...(sh.scenes||[]),...scenes.map(x=>{const n={block:'',no:'',name:'',song:'',cast:'',area:'',instr:'',props:'',note:''};Object.keys(n).forEach(k=>n[k]=String(x[k]??'').trim());n.songIds=Object.keys(ids).filter(t=>n.song.includes(t)).map(t=>ids[t]);return n})];
+    }else checked('ai-s').forEach(t=>put('songs',uid('s'),{title:t,ts:Date.now()}));
+    checked('ai-l').forEach(i=>{sh.links=[...(sh.links||[]),{label:links[i].label||'',url:links[i].url}]});
+    checked('ai-n').forEach(i=>put('notices',uid('n'),{title:notices[i].title||'公告',body:notices[i].body||'',date:today(),showId:id,ts:Date.now()}));
+    const tags=Array.isArray(out.shotTags)?out.shotTags:[];
+    if(tags.length&&nShots){const start=(sh.shots||[]).length-nShots;tags.forEach((t,j)=>{const x=sh.shots[start+j];if(x&&SHOT_TAGS.includes(t)&&x.tag==='截圖')x.tag=t})}
+    put('shows',id,sh);toast('已填進卡片');
+  });
+}
+function viewShot(id,a){
+  const x=(S.shows[id].shots||[]).find(x=>x.id===a);if(!x)return;
+  $('#viewer').innerHTML='<div class="vt"><button data-act="viewer-close">關閉</button>'+(assets?'<select data-act="shot-tag" data-id="'+id+'" data-a="'+a+'" aria-label="圖片類型" style="background:#222;color:#fff;border:1px solid #666;border-radius:999px;padding:6px 10px">'+SHOT_TAGS.map(t=>'<option'+(t===x.tag?' selected':'')+'>'+t+'</option>').join('')+'</select><button data-act="shot-del" data-id="'+id+'" data-a="'+a+'">刪除</button>':'<span>'+esc(x.tag)+'</span>')+'</div><div class="vi"><img src="'+blobUrl(a)+'" alt="'+esc(x.tag)+'"></div>';
+  $('#viewer').hidden=false;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-act],[data-tab]');if(!t)return;
+  if(t.dataset.tab){if(t.dataset.tab==='shows'&&tab==='shows')openShow=null;tab=t.dataset.tab;try{localStorage.setItem(LS+'-tab',tab)}catch(_){}render();window.scrollTo(0,0);return}
+  const a=t.dataset.act,id=t.dataset.id;
+  switch(a){
+    case 'close':closeSheet();break;
+    case 'save':{if(sheetSave&&sheetSave()===false)return;closeSheet();break}
+    case 'open-show':openShow=id;showSeg='info';render();window.scrollTo(0,0);break;
+    case 'close-show':openShow=null;render();break;
+    case 'show-seg':showSeg=t.dataset.k;render();break;
+    case 'new-show':editShow('');break;
+    case 'edit-show':editShow(id);break;
+    case 'edit-after':{const s=S.shows[id];sheet('演出後',fld('review','心得與回饋',s.review,'area')+fld('media','照片／影片連結',s.media,'area'),()=>put('shows',id,{...clone(s),review:val('review'),media:val('media')}));break}
+    case 'del-show':if(confirm('確定刪除「'+S.shows[id].title+'」？截圖也會從卡片移除。')){del('shows',id);openShow=null}break;
+    case 'add-link':{const s=S.shows[id];sheet('新增連結',fld('label','說明',''),null);$('#sheet .sheet-body').insertAdjacentHTML('beforeend',fld('url','網址','','url')+'<button class="btn primary" data-act="save-link" data-id="'+id+'">加入</button>');break}
+    case 'save-link':{const u=val('url');if(!/^https?:\/\//.test(u)){toast('網址要以 http 開頭');return}const s=clone(S.shows[id]);s.links=[...(s.links||[]),{label:val('label'),url:u}];put('shows',id,s);closeSheet();break}
+    case 'del-link':{const s=clone(S.shows[id]);s.links.splice(+t.dataset.i,1);put('shows',id,s);break}
+    case 'edit-scene':editScene(id,+t.dataset.i);break;
+    case 'move-scene':{const {show,i}=sheetExtra,d=+t.dataset.d,s=clone(S.shows[show]),j=i+d;if(j<0||j>=s.scenes.length)return;[s.scenes[i],s.scenes[j]]=[s.scenes[j],s.scenes[i]];put('shows',show,s);closeSheet();break}
+    case 'del-scene':{const {show,i}=sheetExtra,s=clone(S.shows[show]);s.scenes.splice(i,1);put('shows',show,s);closeSheet();break}
+    case 'pick-cast':{const s=S.shows[id];sheet('參與名單',memberChecks('cast',s.cast||[]),()=>put('shows',id,{...clone(s),cast:checked('cast')}));break}
+    case 'add-shots':pickTarget=id;pickAi=false;$('#file').click();break;
+    case 'ai-pick':pickTarget=id;pickAi=true;$('#file').click();break;
+    case 'ai-saved':{const b=await savedBlobs(id);aiRun(id,b);break}
+    case 'ai-stop':sheetExtra.ctl&&sheetExtra.ctl.abort();closeSheet();break;
+    case 'view-shot':viewShot(id,t.dataset.a);break;
+    case 'viewer-close':$('#viewer').hidden=true;$('#viewer').innerHTML='';break;
+    case 'shot-del':{if(!confirm('從卡片刪除這張圖？'))return;const s=clone(S.shows[id]);s.shots=s.shots.filter(x=>x.id!==t.dataset.a);put('shows',id,s);try{await assets.delete(t.dataset.a)}catch(_){} $('#viewer').hidden=true;break}
+    case 'edit-member':editMember(id);break;
+    case 'del-member':if(confirm('刪除這位成員？')){del('members',id);closeSheet()}break;
+    case 'mem-filter':memFilter=t.dataset.k;render();break;
+    case 'edit-song':editSong(id);break;
+    case 'del-song':if(confirm('刪除這首歌？')){del('songs',id);closeSheet()}break;
+    case 'edit-reh':editReh(id);break;
+    case 'del-reh':if(confirm('刪除這筆團練紀錄？')){del('rehearsals',id);closeSheet()}break;
+    case 'new-notice':editNotice('',t.dataset.show);break;
+    case 'edit-notice':editNotice(id);break;
+    case 'del-notice':if(confirm('刪除這則公告？')){del('notices',id);closeSheet()}break;
+    case 'import':$('#import').click();break;
+    case 'backup':try{await downloads.save({filename:'合唱團備份-'+today()+'.json',data:JSON.stringify(S,null,2)})}catch(_){toast('沒有下載備份檔')}break;
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.act==='shot-tag'){const s=clone(S.shows[t.dataset.id]);const x=s.shots.find(x=>x.id===t.dataset.a);if(x){x.tag=t.value;put('shows',t.dataset.id,s)}}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='mem-q'){memQ=e.target.value;scheduleRender()}
+  if(e.target.id==='song-q'){songQ=e.target.value;scheduleRender()}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#viewer').hidden){$('#viewer').hidden=true}else if(!$('#sheet').hidden)closeSheet()}});
+let tt=null;
+function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
+
+/* ---------- boot ---------- */
+try{const tb=localStorage.getItem(LS+'-tab');if(tb&&TITLES[tb])tab=tb}catch(_){}
+loadCache(); render();
+(async()=>{
+  const c=window.claude;
+  if(c&&c.use){
+    c.use('downloads').then(x=>{downloads=x;if(x)scheduleRender()}).catch(()=>{});
+    c.use('assets').then(x=>{assets=x;scheduleRender()}).catch(()=>{});
+    c.use('sample').then(async x=>{sample=x;if(x){const l=await x.limits().catch(()=>null);canImages=!!(l&&l.images)}scheduleRender()}).catch(()=>{});
+    try{db=await c.use('db')}catch(e){db=null}
+  }
+  if(!db){mode='local';if(COLS.every(c=>!Object.keys(S[c]).length)){COLS.forEach(c=>S[c]=clone(SNAP[c]||{}));usingSnap=true}render();return}
+  const pending=new Set(COLS);
+  COLS.forEach(col=>{
+    db.collection(col).onSnapshot(snap=>{
+      const m={};snap.docs.forEach(d=>{m[d.id]=clone(d.data())});
+      S[col]=m;pending.delete(col);if(!pending.size)mode='cloud';saveCache();scheduleRender();
+    },err=>{if(err.code==='revoked'||err.code==='not_granted')mode='local';toast('雲端連線中斷，資料先存在這台裝置');scheduleRender()});
+  });
+})();
+})();
+</script>
+
+<a class="to-origina" href="https://fuwei0618-cmd.github.io/Entry/map/" aria-label="回到 Origina 地圖">↖ Origina</a>
+<script>if(window.top!==window.self){var _o=document.querySelector(".to-origina");_o&&_o.remove();}</script>
+<style>.to-origina{position:fixed;left:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9;font:600 12px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.04em;text-decoration:none;color:#2B2724;background:rgba(236,232,225,.88);border:1px solid rgba(43,39,36,.18);border-radius:999px;padding:7px 11px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}</style>
+</body></html>
