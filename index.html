@@ -154,6 +154,64 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 #viewer .vt button,#viewer .vt a{color:#fff;background:none;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;font-size:14px;text-decoration:none}
 #viewer .vi{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:0 8px calc(16px + env(safe-area-inset-bottom,0px))}
 #viewer img{max-width:100%;height:auto}
+/* scores: page thumbnails, practice tracks, setlist */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (min-width:560px){.pgrid{grid-template-columns:repeat(4,1fr)}}
+.pthumb{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.pimg{position:relative;display:block;width:100%;aspect-ratio:3/4;padding:0;border:0;background:#fff}
+.pimg img{width:100%;height:100%;object-fit:contain;display:block}
+.pimg .inked{position:absolute;right:4px;top:4px;font-size:12px;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:0 6px}
+.pbar{display:flex;align-items:center;justify-content:space-between;padding:0 2px 0 10px;font-size:13px;color:var(--muted)}
+.pbar .ghost{min-height:34px;padding:4px 10px}
+.nofile{display:grid;place-items:center;width:100%;height:100%;padding:8px;font-size:12px;color:#6E5F63;text-align:center;background:#F4F0EE}
+.trk{padding:10px 14px;display:grid;gap:4px}
+.trk .ghost{min-height:34px}
+.trk audio{width:100%;height:40px}
+.ghost:disabled{opacity:.3;cursor:default}
+.sl{padding-right:4px}
+.sl .no{width:22px;text-align:center;color:var(--muted);font-size:13px;flex:none}
+.sl .sl-open{background:none;border:0;text-align:left;padding:0;min-height:40px}
+.sl .ghost{min-width:34px;padding:8px 6px}
+/* reader: full-screen score with ink and practice audio; always dark around the white page */
+#reader{position:fixed;inset:0;z-index:45;background:#2A2426;color:#F4EFE7;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
+#reader button,#reader select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#F4EFE7;border-radius:999px;min-height:38px;padding:4px 12px;font-size:14px;white-space:nowrap}
+#reader button[aria-pressed="true"]{background:#F4EFE7;color:#2A1E22;border-color:#F4EFE7}
+#reader select option{color:#2A1E22;background:#fff}
+#reader select:disabled{opacity:.6}
+.rd-top{display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px}
+.rd-t{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.rd-t b{font-family:var(--display);font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rd-t select{min-width:0;max-width:100%;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+#rd-pg{font-size:13px;opacity:.75;white-space:nowrap}
+@media (max-width:480px){#rd-pg{display:none}}
+.rd-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0 10px 8px}
+#reader .rd-tools .pen{width:40px;padding:0;display:grid;place-items:center}
+.rd-tools .pen i{width:18px;height:18px;border-radius:50%;display:block;border:2px solid rgba(255,255,255,.75)}
+.rd-tools .pen.hl i{border-radius:4px;width:22px;height:12px}
+.rd-tools .sep{flex:1}
+.rd-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;touch-action:none;overflow:hidden}
+.rd-page{position:relative;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.45);flex:none;overflow:hidden}
+.rd-page img{width:100%;height:100%;display:block;pointer-events:none;-webkit-touch-callout:none}
+.rd-page canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.rd-none{height:100%;display:grid;place-content:center;gap:8px;text-align:center;color:#6E5F63;padding:20px}
+.rd-none b{font-family:var(--display);font-size:26px;color:#2A1E22}
+.rd-audio{display:grid;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.28)}
+.rd-ctl{display:flex;align-items:center;gap:8px}
+.rd-ctl input[type=range]{flex:1;min-width:50px;accent-color:#E58FA9}
+#rd-time{font-size:12px;opacity:.8;white-space:nowrap}
+@media (max-width:480px){#rd-time{display:none}#reader .rd-ctl button,#reader .rd-ctl select{padding:4px 9px}}
+#reader.bare .rd-top,#reader.bare .rd-tools,#reader.bare .rd-audio{display:none}
+body.full .osync{display:none!important} /* OneDrive badge would cover the reader's controls */
+/* scanner */
+#scan{position:fixed;inset:0;z-index:46;background:var(--bg);display:flex;flex-direction:column}
+.sc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;border-bottom:1px solid var(--line)}
+.sc-top h2{font-size:18px;flex:1;text-align:center}
+.sc-body{flex:1;overflow:auto;padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:14px;align-content:start}
+@media (min-width:760px){.sc-body{grid-template-columns:1fr 300px}}
+.sc-stage canvas{display:block;max-width:100%;max-height:66vh;width:auto;height:auto;margin:0 auto;touch-action:none;border-radius:8px}
+.sc-side{display:grid;gap:12px;align-content:start}
+.sc-pv canvas{display:block;max-width:100%;max-height:200px;margin-top:6px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.sc-pick{grid-column:1/-1;display:grid;gap:14px;text-align:center;padding:30px 10px;color:var(--muted)}
 </style>
 
 <div class="app">
@@ -169,14 +227,20 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 </nav></div>
 <div id="sheet" hidden></div>
 <div id="viewer" hidden></div>
+<div id="reader" hidden></div>
+<div id="scan" hidden></div>
 <div id="toast" hidden role="status"></div>
 <input type="file" id="file" accept="image/*" multiple hidden>
 <input type="file" id="import" accept="application/json,.json" hidden>
+<input type="file" id="score-file" accept="image/*,application/pdf,.pdf" multiple hidden>
+<input type="file" id="sc-cam" accept="image/*" capture="environment" hidden>
+<input type="file" id="sc-lib" accept="image/*" multiple hidden>
+<input type="file" id="audio-file" accept="audio/*,.m4a,.mp3,.wav,.aac" multiple hidden>
 
 <script>
 (function(){
 "use strict";
-const COLS=['members','songs','shows','rehearsals','notices'];
+const COLS=['members','songs','shows','rehearsals','notices','ink'];
 const PARTS=[['S','女高'],['A','女中'],['T','男高'],['B','男低']];
 const PARTNAME=Object.fromEntries(PARTS);
 const GROUPS=['桃劇坊','曜星','綻星','銀星'];
@@ -189,7 +253,7 @@ const SNAP={};
 let S={}; COLS.forEach(c=>S[c]={});
 let db=null, assets=null, sample=null, canImages=false, downloads=null, mode='loading';
 let usingSnap=false;
-let tab='shows', openShow=null, showSeg='info', memFilter='全部', memQ='', songQ='';
+let tab='shows', openShow=null, openSong=null, fileTarget=null, showSeg='info', memFilter='全部', memQ='', songQ='';
 const mem={}; // assetId -> File picked in this view (sent to Claude without refetching)
 
 const $=(s,r=document)=>r.querySelector(s);
@@ -236,8 +300,8 @@ function del(col,id){delete S[col][id];saveCache();scheduleRender();if(!db)retur
 let rq=false;
 function scheduleRender(){if(rq)return;rq=true;requestAnimationFrame(()=>{rq=false;render()})}
 function render(){
-  const inShow=tab==='shows'&&openShow&&S.shows[openShow];
-  $('#title').innerHTML=inShow?'<button class="back" data-act="close-show" aria-label="回演出列表">‹</button><span>'+esc(S.shows[openShow].title||'演出')+'</span>':esc(TITLES[tab]);
+  const inShow=tab==='shows'&&openShow&&S.shows[openShow], inSong=tab==='songs'&&openSong&&S.songs[openSong];
+  $('#title').innerHTML=inShow?'<button class="back" data-act="close-show" aria-label="回演出列表">‹</button><span>'+esc(S.shows[openShow].title||'演出')+'</span>':inSong?'<button class="back" data-act="close-song" aria-label="回曲目列表">‹</button><span>曲目</span>':esc(TITLES[tab]);
   $('#title').style.fontSize=inShow?'20px':'';
   $('#sync').textContent=mode==='cloud'?'已同步':mode==='local'?(PAGES?'OneDrive 同步：看右下角雲朵':'只存在這台裝置'):'載入中…';
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false'));
@@ -245,7 +309,9 @@ function render(){
   const empty=COLS.every(c=>!Object.keys(S[c]).length);
   if(mode==='loading'&&empty){$('#main').innerHTML='<div class="empty"><div class="think" style="justify-content:center"><span class="dot"></span>正在連上雲端資料…</div></div>';return}
   const warn=mode==='local'&&!PAGES?'<div class="banner warn" style="margin-bottom:14px">這個畫面沒有連上雲端資料庫，'+(usingSnap?'現在顯示的是 10/10 的備份內容，':'')+'修改只會存在這台裝置。請從 claude.ai 或 Claude App 登入後開啟這個 app。</div>':'';
-  $('#main').innerHTML=warn+(inShow?vShow(openShow):{shows:vShows,reh:vReh,songs:vSongs,members:vMembers,notices:vNotices}[tab]());
+  if(inSong&&[...document.querySelectorAll('#main audio')].some(a=>!a.paused))return; // re-rendering would stop the track that is playing
+  $('#main').innerHTML=warn+(inShow?vShow(openShow):inSong?vSong(openSong):{shows:vShows,reh:vReh,songs:vSongs,members:vMembers,notices:vNotices}[tab]());
+  hydrate($('#main'));
   if(f==='mem-q'||f==='song-q'){const i=$('#'+f);if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
 }
 
@@ -280,9 +346,9 @@ function showRow(s){
 /* ---------- 演出 detail ---------- */
 function vShow(id){
   const s=S.shows[id];
-  const segs=[['info','行政'],['scenes','場幕表'],['cast','站位與名單'],['shots','截圖'],['after','演出後']];
+  const segs=[['info','行政'],['scenes','場幕表'],['setlist','歌單'],['cast','站位與名單'],['shots','截圖'],['after','演出後']];
   let h='<div class="seg" role="group" aria-label="演出內容">'+segs.map(([k,l])=>'<button data-act="show-seg" data-k="'+k+'" aria-pressed="'+(showSeg===k)+'">'+l+'</button>').join('')+'</div><div style="height:14px"></div>';
-  h+={info:vInfo,scenes:vScenes,cast:vCast,shots:vShots,after:vAfter}[showSeg](s,id);
+  h+={info:vInfo,scenes:vScenes,setlist:vSetlist,cast:vCast,shots:vShots,after:vAfter}[showSeg](s,id);
   return h;
 }
 function aiBar(id){
@@ -362,8 +428,8 @@ function vSongs(){
   let h='<section class="sec"><input class="search" id="song-q" type="search" placeholder="搜尋歌名" value="'+esc(songQ)+'" aria-label="搜尋歌名"></section>';
   h+='<section class="sec"><div class="sec-head"><h2>'+all.length+' 首</h2><button class="btn sm primary" data-act="edit-song" data-id="">＋ 新增</button></div>';
   if(!shown.length)return h+'<div class="empty">'+(all.length?'沒有符合的歌。':'還沒有曲目。')+'</div></section>';
-  h+='<ul class="list">'+shown.map(s=>'<li><button class="row" data-act="edit-song" data-id="'+s.id+'"><div class="main"><div class="title">'+esc(s.title)+'</div>'+(s.sub||s.note?'<div class="sub">'+esc(s.sub||s.note)+'</div>':'')+'</div><div class="chips">'+(used[s.id]?'<span class="chip accent">演出 '+used[s.id].size+' 場</span>':'')+(s.score?'<span class="chip">譜</span>':'')+(s.audio?'<span class="chip">音檔</span>':'')+'</div></button></li>').join('')+'</ul>';
-  return h+'<p class="small muted">譜建議繼續放在 iPad 的譜 app，這裡存連結就好。</p></section>';
+  h+='<ul class="list">'+shown.map(s=>{const np=(s.pages||[]).length,nt=(s.tracks||[]).length;return '<li><button class="row" data-act="open-song" data-id="'+s.id+'"><div class="main"><div class="title">'+esc(s.title)+'</div>'+(s.sub||s.note?'<div class="sub">'+esc(s.sub||s.note)+'</div>':'')+'</div><div class="chips">'+(used[s.id]?'<span class="chip accent">演出 '+used[s.id].size+' 場</span>':'')+(np?'<span class="chip">譜 '+np+' 頁</span>':s.score?'<span class="chip">譜連結</span>':'')+(nt?'<span class="chip">音檔 '+nt+'</span>':s.audio?'<span class="chip">音檔連結</span>':'')+'</div></button></li>'}).join('')+'</ul>';
+  return h+'</section>';
 }
 /* ---------- 成員 ---------- */
 function vMembers(){
@@ -443,9 +509,9 @@ function editMember(id){
 function editSong(id){
   const s=id?S.songs[id]:{};
   sheet(id?'編輯曲目':'新增曲目',
-    fld('title','歌名',s.title)+fld('sub','組曲內容／版本（例：女生齊唱版）',s.sub)+fld('score','譜的連結',s.score,'url')+fld('audio','練唱音檔／影片連結',s.audio,'url')+fld('note','備註（調性、聲部提醒）',s.note,'area')
+    fld('title','歌名',s.title)+fld('sub','組曲內容／版本（例：女生齊唱版）',s.sub)+fld('score','譜的雲端連結（可不填）',s.score,'url')+fld('audio','練唱影片或雲端音檔連結（可不填）',s.audio,'url')+fld('note','備註（調性、聲部提醒）',s.note,'area')
     +(id?'<button class="btn sm warn" data-act="del-song" data-id="'+id+'">刪除曲目</button>':''),
-    ()=>{const t=val('title');if(!t){toast('請填歌名');return false}put('songs',id||uid('s'),{...clone(s),title:t,sub:val('sub'),score:val('score'),audio:val('audio'),note:val('note'),ts:s.ts||Date.now()})});
+    ()=>{const t=val('title');if(!t){toast('請填歌名');return false}const nid=id||uid('s');put('songs',nid,{...clone(s),title:t,sub:val('sub'),score:val('score'),audio:val('audio'),note:val('note'),ts:s.ts||Date.now()});if(!id){openSong=nid;window.scrollTo(0,0)}});
 }
 function editReh(id){
   const r=id?S.rehearsals[id]:{date:today()};
@@ -569,10 +635,409 @@ function viewShot(id,a){
   $('#viewer').hidden=false;
 }
 
+/* ---------- files: score pages and practice audio ---------- */
+/* Claude version: files go to the artifact's asset store (/_blob/<id>).
+   GitHub version: files stay in IndexedDB on this device and upload to OneDrive (Origina/Chorus/files/<id>), so a score still opens offline on stage. */
+const Files={
+  urls:{}, p:{}, idb:null, uploading:false,
+  open(){return this.idb||(this.idb=new Promise((ok,bad)=>{const r=indexedDB.open('chorus-files',1);r.onupgradeneeded=()=>{r.result.createObjectStore('blob');r.result.createObjectStore('pending')};r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)}))},
+  async tx(store,mode,fn){const d=await this.open();return new Promise((ok,bad)=>{const t=d.transaction(store,mode),r=fn(t.objectStore(store));t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>bad(t.error)})},
+  getLocal(id){return this.tx('blob','readonly',s=>s.get(id)).catch(()=>null)},
+  setLocal(id,b){return this.tx('blob','readwrite',s=>s.put(b,id)).catch(()=>{})},
+  remote(){const o=window.OriginaSync;return PAGES&&o&&o.api?o:null},
+  path(id){return (this.remote().folder()||'Chorus')+'/files/'+id},
+  isAsset:id=>/^[0-9a-f]{32}$/.test(id),
+  async add(blob,ext){
+    if(assets&&!PAGES){const r=await assets.upload(blob);this.urls[r.id]=URL.createObjectURL(blob);return r.id}
+    const id=uid('f')+'.'+ext;
+    await this.setLocal(id,blob);this.urls[id]=URL.createObjectURL(blob);
+    await this.tx('pending','readwrite',s=>s.put(1,id)).catch(()=>{});
+    this.upload();
+    return id;
+  },
+  async upload(){
+    const o=this.remote();if(!o||this.uploading)return;this.uploading=true;
+    try{
+      const ids=await this.tx('pending','readonly',s=>s.getAllKeys())||[];
+      for(const id of ids){const b=await this.getLocal(id);if(b)await o.api.putBlob(this.path(id),b);await this.tx('pending','readwrite',s=>s.delete(id))}
+    }catch(e){/* not signed in or offline: retried on the next add and whenever the app comes back to the foreground */}
+    this.uploading=false;
+  },
+  url(id){
+    if(!id)return Promise.resolve(null);
+    if(this.urls[id])return Promise.resolve(this.urls[id]);
+    return this.p[id]||(this.p[id]=(async()=>{
+      if(this.isAsset(id))return PAGES?null:(this.urls[id]='/_blob/'+id);
+      let b=await this.getLocal(id);
+      if(!b){const o=this.remote();if(o){try{b=await o.api.getBlob(this.path(id))}catch(e){}if(b)await this.setLocal(id,b)}}
+      return b?(this.urls[id]=URL.createObjectURL(b)):null;
+    })().then(u=>{if(!u)delete this.p[id];return u}));
+  },
+  async blob(id){const u=await this.url(id);if(!u)return null;const r=await fetch(u);return r.ok?r.blob():null},
+  remove(id){
+    if(this.isAsset(id)){if(assets)assets.delete(id).catch(()=>{});return}
+    this.tx('blob','readwrite',s=>s.delete(id)).catch(()=>{});this.tx('pending','readwrite',s=>s.delete(id)).catch(()=>{});
+  }
+};
+const fimg=(f,alt)=>'<img data-f="'+esc(f)+'" alt="'+esc(alt)+'" draggable="false"'+(Files.urls[f]?' src="'+Files.urls[f]+'"':'')+'>';
+function hydrate(root){
+  root.querySelectorAll('img[data-f]:not([src]),audio[data-f]:not([src])').forEach(async el=>{
+    const u=await Files.url(el.dataset.f);if(!el.isConnected)return;
+    if(u){el.src=u;return}
+    if(el.tagName==='IMG')el.replaceWith(Object.assign(document.createElement('div'),{className:'nofile',textContent:Files.isAsset(el.dataset.f)?'這頁存在 Claude 版':'讀不到，連上網路後再開一次'}));
+  });
+}
+
+/* ---------- images, PDF, scanner ---------- */
+async function fileToCanvas(f,max){
+  const bmp=await createImageBitmap(f).catch(()=>null);if(!bmp)return null;
+  const s=Math.min(1,max/Math.max(bmp.width,bmp.height)),cv=document.createElement('canvas');
+  cv.width=Math.round(bmp.width*s);cv.height=Math.round(bmp.height*s);
+  const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(bmp,0,0,cv.width,cv.height);
+  return cv;
+}
+const toJpeg=(cv,q)=>new Promise(ok=>cv.toBlob(ok,'image/jpeg',q||.85));
+async function addPageCanvases(id,cvs){
+  const add=[];
+  for(const cv of cvs){const f=await Files.add(await toJpeg(cv),'jpg');add.push({f,w:cv.width,h:cv.height})}
+  const s=clone(S.songs[id]);s.pages=[...(s.pages||[]),...add];put('songs',id,s);
+  return add.length;
+}
+let pdfjs=null;
+async function pdfPages(file,each){
+  if(!pdfjs){
+    await new Promise((ok,bad)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=ok;s.onerror=()=>bad(new Error('PDF 工具載入失敗'));document.head.appendChild(s)});
+    pdfjs=window.pdfjsLib;pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const doc=await pdfjs.getDocument({data:await file.arrayBuffer()}).promise;
+  for(let i=1;i<=doc.numPages;i++){
+    const pg=await doc.getPage(i),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:Math.min(3,2200/Math.max(v0.width,v0.height))});
+    const cv=document.createElement('canvas');cv.width=Math.round(v.width);cv.height=Math.round(v.height);
+    const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);
+    await pg.render({canvasContext:x,viewport:v}).promise;
+    await each(cv,i,doc.numPages);
+  }
+  return doc.numPages;
+}
+let adding=Promise.resolve();
+function addScoreFiles(id,files){
+  const fs=[...files].filter(f=>/^image\//.test(f.type)||f.type==='application/pdf'||/\.pdf$/i.test(f.name||''));
+  if(!fs.length){toast('只能放圖片或 PDF');return}
+  adding=adding.then(async()=>{
+    let n=0;toast('加入中…');
+    for(const f of fs){
+      try{
+        if(/^image\//.test(f.type)){const cv=await fileToCanvas(f,2400);if(cv)n+=await addPageCanvases(id,[cv]);else toast('有一張圖片打不開')}
+        else n+=await pdfPages(f,async(cv,i,all)=>{toast('PDF 第 '+i+' / '+all+' 頁');await addPageCanvases(id,[cv])});
+      }catch(e){toast('「'+(f.name||'檔案')+'」沒加進去（'+(e.code||e.message||'錯誤')+'）')}
+    }
+    if(n)toast('已加入 '+n+' 頁');
+  });
+}
+async function pasteScore(id){
+  try{
+    const fs=[];
+    for(const it of await navigator.clipboard.read()){const t=it.types.find(x=>x.startsWith('image/'));if(t)fs.push(new File([await it.getType(t)],'paste.'+t.split('/')[1],{type:t}))}
+    if(!fs.length){toast('剪貼簿裡沒有圖片。先長按圖片選「拷貝」');return}
+    addScoreFiles(id,fs);
+  }catch(e){toast('這裡讀不到剪貼簿，電腦請直接按 Ctrl+V')}
+}
+/* Perspective crop, ported from the insurance app's document scanner. k = four corners clockwise from top-left. */
+function solveH(dst,src){
+  const A=[];
+  for(let i=0;i<4;i++){const[u,v]=dst[i],[x,y]=src[i];A.push([u,v,1,0,0,0,-u*x,-v*x,x]);A.push([0,0,0,u,v,1,-u*y,-v*y,y])}
+  for(let c=0;c<8;c++){let p=c;for(let r=c+1;r<8;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;[A[c],A[p]]=[A[p],A[c]];for(let r=0;r<8;r++){if(r===c)continue;const f=A[r][c]/A[c][c];for(let k=c;k<9;k++)A[r][k]-=f*A[c][k]}}
+  return A.map((r,i)=>r[8]/r[i]);
+}
+function warpImg(img,k,filter,level,max){
+  const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+  let W=Math.max(d(k[0],k[1]),d(k[3],k[2])),H=Math.max(d(k[0],k[3]),d(k[1],k[2]));const s=Math.min(1,(max||2200)/Math.max(W,H));W=Math.max(1,Math.round(W*s));H=Math.max(1,Math.round(H*s));
+  const h=solveH([[0,0],[W,0],[W,H],[0,H]],k),sd=img.getContext('2d').getImageData(0,0,img.width,img.height).data,iw=img.width,ih=img.height;
+  const out=document.createElement('canvas');out.width=W;out.height=H;const ox=out.getContext('2d'),od=ox.createImageData(W,H),o=od.data;
+  let sum=0;
+  for(let v=0;v<H;v++)for(let u=0;u<W;u++){
+    const z=h[6]*u+h[7]*v+1;let x=(h[0]*u+h[1]*v+h[2])/z,y=(h[3]*u+h[4]*v+h[5])/z;
+    x=Math.min(iw-1,Math.max(0,x|0));y=Math.min(ih-1,Math.max(0,y|0));
+    const si=(y*iw+x)*4,oi=(v*W+u)*4;o[oi]=sd[si];o[oi+1]=sd[si+1];o[oi+2]=sd[si+2];o[oi+3]=255;sum+=.3*sd[si]+.59*sd[si+1]+.11*sd[si+2];
+  }
+  if(filter!=='color'){
+    const mean=sum/(W*H),L=Math.max(0,Math.min(100,level))/100,a=.75-L*.4,t=.62+L*.4;
+    for(let i=0;i<o.length;i+=4){
+      let g=.3*o[i]+.59*o[i+1]+.11*o[i+2];
+      if(filter==='gray'){g=(g-mean*a)*(255/(mean*(1.1-a)||1));g=Math.max(0,Math.min(255,g))}else g=g>mean*t?255:Math.max(0,g*.35);
+      o[i]=o[i+1]=o[i+2]=g;
+    }
+  }
+  ox.putImageData(od,0,0);
+  return out;
+}
+function rotateCanvas(src){const cv=document.createElement('canvas');cv.width=src.height;cv.height=src.width;const x=cv.getContext('2d');x.translate(cv.width,0);x.rotate(Math.PI/2);x.drawImage(src,0,0);return cv}
+let SC=null;
+function openScanner(id){SC={id,img:null,k:null,filter:'gray',level:50,queue:[],n:0,drag:-1};renderScan()}
+function closeScanner(){SC=null;document.body.classList.remove('full');$('#scan').hidden=true;$('#scan').innerHTML='';render()}
+function renderScan(){
+  const el=$('#scan');el.hidden=false;document.body.classList.add('full');
+  let h='<header class="sc-top"><button class="ghost" data-act="sc-close">'+(SC.n?'完成':'關閉')+'</button><h2>掃描樂譜'+(SC.n?' · 已加入 '+SC.n+' 頁':'')+'</h2>'+(SC.img?'<button class="ghost" data-act="sc-add" style="font-weight:700">加入這頁</button>':'<span style="width:64px"></span>')+'</header><div class="sc-body">';
+  if(!SC.img)h+='<div class="sc-pick"><p>把譜放平、光線亮一點，從正上方拍。<br>也可以從相簿一次選好幾張，再一張一張對齊。<br>電腦上可以把圖片拖進來，或按 Ctrl+V 貼上。</p><div class="btns" style="justify-content:center"><button class="btn primary" data-act="sc-cam">開相機</button><button class="btn" data-act="sc-lib">從相簿選</button></div></div>';
+  else h+='<div class="sc-stage"><canvas id="sc-cv"></canvas></div><div class="sc-side"><p class="small muted" style="margin:0">拖四個角對齊譜的邊緣；拖邊上中間的白點可以整條邊一起移。</p>'
+    +'<div class="seg" role="group" aria-label="效果">'+[['color','原色'],['gray','灰階增強'],['bw','黑白']].map(([k,l])=>'<button data-act="sc-flt" data-k="'+k+'" aria-pressed="'+(SC.filter===k)+'">'+l+'</button>').join('')+'</div>'
+    +(SC.filter!=='color'?'<label class="f"><span>深淺：音符太淡往右，糊成一團往左</span><input type="range" id="sc-lv" min="0" max="100" value="'+SC.level+'"></label>':'')
+    +'<div class="sc-pv"><span class="label">加入後的樣子</span><canvas id="sc-pv"></canvas></div>'
+    +'<div class="btns"><button class="btn primary" data-act="sc-add">加入這頁</button><button class="btn sm" data-act="sc-full">用整張圖</button><button class="btn sm" data-act="sc-rot">↻ 轉方向</button><button class="btn sm" data-act="sc-skip">不要這張</button></div>'
+    +(SC.queue.length?'<p class="small muted" style="margin:0">後面還有 '+SC.queue.length+' 張</p>':'')+'</div>';
+  el.innerHTML=h+'</div>';
+  if(SC.img){setupCorners();scPreview()}
+}
+async function scLoad(f){
+  const cv=await fileToCanvas(f,2400);if(!SC)return;
+  if(!cv){toast('這張圖片打不開');scNext();return}
+  const w=cv.width,h=cv.height,m=.05;SC.img=cv;SC.k=[[w*m,h*m],[w*(1-m),h*m],[w*(1-m),h*(1-m)],[w*m,h*(1-m)]];renderScan();
+}
+function scNext(){if(SC.queue.length)scLoad(SC.queue.shift());else renderScan()}
+function scTake(files){const imgs=[...files].filter(f=>/^image\//.test(f.type));if(!imgs.length){toast('掃描只能放圖片，PDF 請用「加入圖片或 PDF」');return}if(SC.img){SC.queue.push(...imgs);renderScan()}else{SC.queue.push(...imgs.slice(1));scLoad(imgs[0])}}
+async function scAdd(){
+  if(!SC||!SC.img||SC.busy)return;SC.busy=true;toast('加入中…');
+  try{await addPageCanvases(SC.id,[warpImg(SC.img,SC.k,SC.filter,SC.level)]);SC.n++;toast('已加入第 '+(S.songs[SC.id].pages||[]).length+' 頁')}catch(e){toast('沒加進去（'+(e.code||'錯誤')+'）')}
+  SC.busy=false;SC.img=null;scNext();
+}
+let scPvT=null;
+function scPreview(){clearTimeout(scPvT);scPvT=setTimeout(()=>{const pv=$('#sc-pv');if(!pv||!SC||!SC.img)return;const out=warpImg(SC.img,SC.k,SC.filter,SC.level,520);pv.width=out.width;pv.height=out.height;pv.getContext('2d').drawImage(out,0,0)},60)}
+function setupCorners(){
+  const cv=$('#sc-cv');cv.width=SC.img.width;cv.height=SC.img.height;const x=cv.getContext('2d'),rad=Math.max(cv.width,cv.height)/40;
+  const EDGE=[[0,1],[1,2],[2,3],[3,0]];
+  const mids=()=>EDGE.map(([a,b])=>[(SC.k[a][0]+SC.k[b][0])/2,(SC.k[a][1]+SC.k[b][1])/2]);
+  const clamp=p=>[Math.max(0,Math.min(cv.width,p[0])),Math.max(0,Math.min(cv.height,p[1]))];
+  const draw=()=>{
+    const k=SC.k;x.drawImage(SC.img,0,0);
+    x.fillStyle='rgba(20,10,13,.45)';x.beginPath();x.rect(0,0,cv.width,cv.height);x.moveTo(...k[0]);x.lineTo(...k[3]);x.lineTo(...k[2]);x.lineTo(...k[1]);x.closePath();x.fill('evenodd');
+    x.strokeStyle='#E58FA9';x.lineWidth=rad/4;x.beginPath();k.forEach((p,i)=>i?x.lineTo(...p):x.moveTo(...p));x.closePath();x.stroke();
+    k.forEach(p=>{x.beginPath();x.arc(p[0],p[1],rad,0,7);x.fillStyle='rgba(229,143,169,.35)';x.fill();x.lineWidth=rad/5;x.stroke()});
+    mids().forEach(p=>{x.beginPath();x.arc(p[0],p[1],rad*.62,0,7);x.fillStyle='rgba(255,255,255,.85)';x.fill();x.lineWidth=rad/5;x.stroke()});
+  };
+  draw();
+  const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+  let start=null;
+  cv.onpointerdown=e=>{
+    const p=pt(e);let best=-1,bd=rad*3.5;
+    [...SC.k,...mids()].forEach((c,i)=>{const d=Math.hypot(c[0]-p[0],c[1]-p[1])+(i>=4?rad*.3:0);if(d<bd){bd=d;best=i}}); // corners win over nearby midpoints
+    SC.drag=best;start=best>=4?{p,k:SC.k.map(c=>[...c])}:null;
+    if(best>=0)cv.setPointerCapture(e.pointerId);
+  };
+  cv.onpointermove=e=>{
+    if(SC.drag<0)return;const p=pt(e);
+    if(SC.drag<4)SC.k[SC.drag]=clamp(p);
+    else{const[a,b]=EDGE[SC.drag-4],dx=p[0]-start.p[0],dy=p[1]-start.p[1];SC.k[a]=clamp([start.k[a][0]+dx,start.k[a][1]+dy]);SC.k[b]=clamp([start.k[b][0]+dx,start.k[b][1]+dy])}
+    draw();
+  };
+  cv.onpointerup=cv.onpointercancel=()=>{if(SC.drag>=0)scPreview();SC.drag=-1;start=null};
+}
+async function rotatePage(id,i){
+  const s=clone(S.songs[id]),p=s.pages[i],b=await Files.blob(p.f);if(!b){toast('讀不到這頁');return}
+  const cv=rotateCanvas(await fileToCanvas(b,4000)),f=await Files.add(await toJpeg(cv),'jpg'),ok=inkKey(p.f),ink=S.ink[ok];
+  if(ink){put('ink',inkKey(f),{s:ink.s.map(st=>{const q=[];for(let j=0;j<st.p.length;j+=2)q.push(cv.width-st.p[j+1],st.p[j]);return{...st,p:q}}),ts:Date.now()});del('ink',ok)}
+  s.pages[i]={f,w:cv.width,h:cv.height};put('songs',id,s);Files.remove(p.f);
+}
+
+/* ---------- 看譜：翻頁、畫筆、練唱音檔 ---------- */
+const inkKey=f=>String(f).replace(/[^A-Za-z0-9_-]/g,'_');
+const PENS=[['pen','#D0312D','紅筆'],['pen','#1F5FBF','藍筆'],['pen','#222222','黑筆'],['hl','#FFD400','螢光筆']];
+const R={on:false,seq:[],i:0,list:[],pen:false,tool:'pen',color:'#D0312D',finger:true,surf:[],undo:{},last:null,g:null,audioOpen:false,asid:null,lock:null};
+try{const v=JSON.parse(localStorage.getItem(LS+'-reader')||'{}');if(typeof v.finger==='boolean')R.finger=v.finger;R.audioOpen=!!v.audioOpen}catch(_){}
+function rdPref(){try{localStorage.setItem(LS+'-reader',JSON.stringify({finger:R.finger,audioOpen:R.audioOpen}))}catch(_){}}
+const AU=new Audio();
+function setlistOf(s){
+  if(Array.isArray(s.setlist))return s.setlist.filter(x=>S.songs[x]);
+  const out=[];(s.scenes||[]).forEach(x=>(x.songIds||[]).forEach(i=>{if(S.songs[i])out.push(i)}));return out;
+}
+function openReader(list,opt,title){
+  R.seq=[];R.list=list;
+  list.forEach((sid,si)=>{const ps=S.songs[sid].pages||[];if(!ps.length)R.seq.push({sid,si,pi:0,n:0,none:true,w:1000,h:1414});else ps.forEach((p,pi)=>R.seq.push({sid,si,pi,n:ps.length,f:p.f,w:p.w||1000,h:p.h||1414}))});
+  if(!R.seq.length)return;
+  R.i=opt.song!=null?Math.max(0,R.seq.findIndex(p=>p.si===opt.song)):Math.min(opt.page||0,R.seq.length-1);
+  R.on=true;R.undo={};R.last=null;R.asid=null;
+  const el=$('#reader');
+  el.innerHTML='<div class="rd-top"><button data-act="rd-close">‹ 關閉</button><div class="rd-t">'
+    +(list.length>1?'<select id="rd-jump" aria-label="跳到哪一首">'+list.map((sid,i)=>'<option value="'+i+'">'+(i+1)+'. '+esc(S.songs[sid].title)+'</option>').join('')+'</select>':'<b>'+esc(title||S.songs[list[0]].title)+'</b>')
+    +'<span id="rd-pg" class="num"></span></div><button data-act="rd-pen" id="rd-penbtn">✎ 筆記</button><button data-act="rd-audio" id="rd-audbtn">♪ 音檔</button></div>'
+    +'<div class="rd-tools" id="rd-tools" hidden>'+PENS.map(([t,c,l])=>'<button class="pen'+(t==='hl'?' hl':'')+'" data-act="rd-tool" data-t="'+t+'" data-c="'+c+'" aria-label="'+l+'"><i style="background:'+c+'"></i></button>').join('')
+    +'<button data-act="rd-tool" data-t="tx">T 打字</button><button data-act="rd-tool" data-t="eraser">橡皮擦</button><button data-act="rd-undo">復原</button><button data-act="rd-clear">清除</button><span class="sep"></span><button data-act="rd-finger" id="rd-finger">手指也能畫</button></div>'
+    +'<div class="rd-stage" id="rd-stage"></div>'
+    +'<div class="rd-audio" id="rd-audio" hidden><select id="rd-track" aria-label="選音檔"></select><div class="rd-ctl"><button data-act="rd-back" aria-label="倒退 5 秒">↺5</button><button data-act="rd-play" id="rd-play" aria-label="播放">▶</button><input type="range" id="rd-seek" min="0" max="1000" value="0" aria-label="播放進度"><span id="rd-time" class="num">0:00</span><select id="rd-rate" aria-label="播放速度"><option value="0.75">0.75×</option><option value="0.85">0.85×</option><option value="1" selected>1×</option><option value="1.1">1.1×</option></select><button data-act="rd-loop" id="rd-loop" aria-pressed="false">重複</button></div></div>';
+  el.hidden=false;el.classList.remove('bare');document.body.style.overflow='hidden';document.body.classList.add('full');
+  rdBind($('#rd-stage'));rdLayout();rdTools();rdAudioSync();keepAwake(true);
+  try{if(!localStorage.getItem(LS+'-reader-tip')){toast('點畫面左右兩邊或左右滑翻頁，點中間隱藏工具列');localStorage.setItem(LS+'-reader-tip','1')}}catch(_){}
+  (async()=>{for(const p of R.seq)if(p.f&&R.on)await Files.url(p.f)})(); // cache every page now so the score still opens offline
+}
+function closeReader(){R.on=false;AU.pause();keepAwake(false);$('#reader').hidden=true;$('#reader').innerHTML='';document.body.style.overflow='';document.body.classList.remove('full');render()}
+async function keepAwake(on){try{if(R.lock){R.lock.release();R.lock=null}if(on&&navigator.wakeLock)R.lock=await navigator.wakeLock.request('screen')}catch(_){}}
+function rdLayout(){
+  const st=$('#rd-stage');if(!st)return;
+  const W=st.clientWidth-12,H=st.clientHeight-12;
+  R.two=W>H*1.15&&R.seq.length>1;
+  if(R.two&&R.seq[R.i].pi%2)R.i--; // side by side, a song's pages pair up from its first page
+  const items=[R.i],nx=R.seq[R.i+1];if(R.two&&nx&&nx.si===R.seq[R.i].si)items.push(R.i+1);
+  R.shown=items.length;
+  const ratio=items.reduce((a,j)=>a+R.seq[j].w/R.seq[j].h,0),ph=Math.max(50,Math.min(H,(W-(items.length-1)*6)/ratio));
+  st.innerHTML=items.map(j=>{const p=R.seq[j];return '<div class="rd-page" data-j="'+j+'" style="width:'+Math.floor(p.w/p.h*ph)+'px;height:'+Math.floor(ph)+'px">'+(p.none?'<div class="rd-none"><b>'+esc(S.songs[p.sid].title)+'</b><span>這首還沒有譜</span></div>':fimg(p.f,'')+'<canvas></canvas>')+'</div>'}).join('');
+  hydrate(st);
+  R.surf=[];st.querySelectorAll('.rd-page').forEach(pg=>{const p=R.seq[+pg.dataset.j];if(p.none)return;const sf=makeSurface(pg,p);pg._sf=sf;sf.resize();R.surf.push(sf)});
+  const p=R.seq[R.i],q=items.length>1?R.seq[R.i+1]:null;
+  $('#rd-pg').textContent=p.none?'':'第 '+(p.pi+1)+(q?'–'+(q.pi+1):'')+' / '+p.n+' 頁';
+  const j=$('#rd-jump');if(j)j.value=p.si;
+}
+function rdGo(d){
+  let j=d>0?R.i+R.shown:R.i-1;
+  if(d<0&&R.two&&j>0&&R.seq[j].pi%2)j--;
+  if(j<0||j>R.seq.length-1){toast(d>0?'已經是最後一頁':'已經是第一頁');return}
+  R.i=j;rdLayout();rdAudioSync();
+}
+function rdTools(){
+  $('#rd-tools').hidden=!R.pen;$('#rd-penbtn').setAttribute('aria-pressed',R.pen);$('#rd-finger').setAttribute('aria-pressed',R.finger);
+  document.querySelectorAll('#rd-tools [data-act=rd-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===R.tool&&(!b.dataset.c||b.dataset.c===R.color)));
+}
+function rdBind(st){
+  st.addEventListener('pointerdown',e=>{
+    if(R.g)return; // a second finger while drawing or swiping is ignored
+    if(e.pointerType==='pen'&&!R.sawPen){R.sawPen=true;if(R.finger){R.finger=false;rdPref();rdTools()}}
+    const pg=e.target.closest('.rd-page'),sf=pg&&pg._sf;
+    const draw=R.pen&&sf&&(e.pointerType!=='touch'||R.finger);
+    R.g={id:e.pointerId,x0:e.clientX,y0:e.clientY,t0:Date.now(),draw,sf};
+    if(!draw)return;
+    e.preventDefault();try{st.setPointerCapture(e.pointerId)}catch(_){}
+    if(R.tool!=='tx'){const p=sf.at(e);sf.begin(p.x,p.y);R.last=sf}
+  });
+  st.addEventListener('pointermove',e=>{
+    const g=R.g;if(!g||g.id!==e.pointerId||!g.draw||R.tool==='tx')return;
+    e.preventDefault();const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];
+    (evs.length?evs:[e]).forEach(ev=>{const p=g.sf.at(ev);g.sf.move(p.x,p.y)});
+  });
+  const up=e=>{
+    const g=R.g;if(!g||g.id!==e.pointerId)return;R.g=null;
+    if(g.draw){
+      if(R.tool!=='tx'){e.type==='pointercancel'?g.sf.cancel():g.sf.end();return}
+      if(e.type==='pointerup'){const p=g.sf.at(e),t=prompt('要寫在譜上的字');if(t&&t.trim())g.sf.text(p.x,p.y,t.trim())}
+      return;
+    }
+    if(e.type==='pointercancel')return;
+    const dx=e.clientX-g.x0,dy=e.clientY-g.y0,r=st.getBoundingClientRect();
+    if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.3){rdGo(dx<0?1:-1);return}
+    if(Math.hypot(dx,dy)<12&&Date.now()-g.t0<500){const fx=(e.clientX-r.left)/r.width;if(fx<.3)rdGo(-1);else if(fx>.7)rdGo(1);else{$('#reader').classList.toggle('bare');requestAnimationFrame(rdLayout)}}
+  };
+  st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
+}
+function styleStroke(ctx,st){
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=st.c;ctx.lineWidth=st.w;
+  if(st.t==='hl'){ctx.globalAlpha=.38;ctx.lineCap='butt'}else ctx.globalAlpha=1;
+}
+function drawStroke(ctx,st){
+  const p=st.p;
+  if(st.t==='tx'){ctx.globalAlpha=1;ctx.fillStyle=st.c;ctx.font='700 '+st.w+'px "Noto Sans TC",sans-serif';ctx.textBaseline='top';String(st.s).split('\n').forEach((l,i)=>ctx.fillText(l,p[0],p[1]+i*st.w*1.2));return}
+  if(p.length<2)return;
+  styleStroke(ctx,st);ctx.beginPath();ctx.moveTo(p[0],p[1]);
+  if(p.length===2)ctx.lineTo(p[0]+.1,p[1]+.1);
+  for(let i=2;i<p.length-2;i+=2){const mx=(p[i]+p[i+2])/2,my=(p[i+1]+p[i+3])/2;ctx.quadraticCurveTo(p[i],p[i+1],mx,my)}
+  if(p.length>2)ctx.lineTo(p[p.length-2],p[p.length-1]);
+  ctx.stroke();ctx.globalAlpha=1;
+}
+function hitErase(strokes,x,y,r){
+  return strokes.filter(st=>{
+    if(st.t==='tx'){const ls=String(st.s).split('\n'),w=Math.max(...ls.map(l=>l.length))*st.w,h=ls.length*st.w*1.2;return!(x>st.p[0]-r&&x<st.p[0]+w+r&&y>st.p[1]-r&&y<st.p[1]+h+r)}
+    for(let i=0;i<st.p.length;i+=2)if(Math.hypot(st.p[i]-x,st.p[i+1]-y)<r+st.w/2)return false;
+    return true;
+  });
+}
+/* Ink is stored per page in page pixels (the 'ink' collection, keyed by the page's file id), so it lines up at any screen size. */
+function makeSurface(pg,p){
+  const cv=pg.querySelector('canvas'),ctx=cv.getContext('2d'),key=inkKey(p.f),u=p.w/1500,und=R.undo[key]||(R.undo[key]=[]);
+  const sf={key,strokes:clone((S.ink[key]||{}).s||[]),live:null,k:1};
+  if(!Array.isArray(sf.strokes))sf.strokes=[];
+  sf.at=e=>{const r=pg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*p.w,y:(e.clientY-r.top)/r.height*p.h}};
+  sf.resize=()=>{const r=pg.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));sf.k=cv.width/p.w;sf.redraw()};
+  sf.redraw=()=>{ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.setTransform(sf.k,0,0,sf.k,0,0);sf.strokes.forEach(st=>drawStroke(ctx,st));if(sf.live)drawStroke(ctx,sf.live)};
+  sf.save=()=>{if(sf.strokes.length)put('ink',key,{s:sf.strokes,ts:Date.now()});else if(S.ink[key])del('ink',key)};
+  sf.snap=()=>{und.push(JSON.stringify(sf.strokes));if(und.length>40)und.shift()};
+  sf.undo=()=>{const v=und.pop();if(v==null){toast('沒有可以復原的筆畫');return}sf.strokes=JSON.parse(v);sf.save();sf.redraw()};
+  sf.clear=()=>{if(!sf.strokes.length)return;sf.snap();sf.strokes=[];sf.save();sf.redraw()};
+  sf.begin=(x,y)=>{sf.snap();if(R.tool==='eraser'){sf.erasing=true;sf.erase(x,y);return}sf.live={t:R.tool,c:R.color,w:Math.round((R.tool==='hl'?28:5)*u*10)/10,p:[Math.round(x),Math.round(y)]};sf.redraw()};
+  sf.move=(x,y)=>{
+    if(sf.erasing){sf.erase(x,y);return}
+    if(!sf.live)return;const q=sf.live.p,lx=q[q.length-2],ly=q[q.length-1];
+    if(Math.hypot(x-lx,y-ly)<1.5*u)return;q.push(Math.round(x),Math.round(y));
+    if(sf.live.t==='hl')sf.redraw();else{ctx.setTransform(sf.k,0,0,sf.k,0,0);styleStroke(ctx,sf.live);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke()}
+  };
+  sf.end=()=>{
+    if(sf.erasing){sf.erasing=false;if(und[und.length-1]===JSON.stringify(sf.strokes))und.pop();else sf.save();return}
+    if(sf.live){sf.strokes.push(sf.live);sf.live=null;sf.save();sf.redraw()}
+  };
+  sf.cancel=()=>{sf.live=null;sf.erasing=false;const v=und.pop();if(v!=null)sf.strokes=JSON.parse(v);sf.redraw()};
+  sf.erase=(x,y)=>{const n=hitErase(sf.strokes,x,y,16*u);if(n.length!==sf.strokes.length){sf.strokes=n;sf.redraw()}};
+  sf.text=(x,y,t)=>{sf.snap();sf.strokes.push({t:'tx',c:R.color==='#FFD400'?'#D0312D':R.color,w:Math.round(40*u),p:[Math.round(x),Math.round(y)],s:t});sf.save();sf.redraw();R.last=sf};
+  return sf;
+}
+/* The audio bar follows the song on screen; a track is only fetched once the bar is open. */
+const fmtT=t=>isFinite(t)?Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'):'0:00';
+function rdAudioSync(){
+  const bar=$('#rd-audio');if(!bar)return;
+  const anyTracks=R.list.some(x=>(S.songs[x].tracks||[]).length),sid=R.seq[R.i].sid,tr=S.songs[sid].tracks||[];
+  $('#rd-audbtn').hidden=!anyTracks;$('#rd-audbtn').setAttribute('aria-pressed',R.audioOpen&&anyTracks);
+  bar.hidden=!(R.audioOpen&&tr.length);
+  if(R.asid&&R.asid!==sid){R.asid=null;AU.pause();AU.removeAttribute('src');AU.load()} // a new song stops the last song's track
+  if(bar.hidden||R.asid===sid)return;
+  R.asid=sid;
+  $('#rd-track').innerHTML=tr.map((t,i)=>'<option value="'+i+'">'+esc(S.songs[sid].title+'：'+(t.name||'音檔 '+(i+1)))+'</option>').join('');
+  rdTime();rdTrack(0);
+}
+async function rdTrack(i){
+  const sid=R.asid,t=(S.songs[sid].tracks||[])[i];if(!t)return;
+  const u=await Files.url(t.f);if(R.asid!==sid)return;
+  if(!u){toast('讀不到這個音檔');return}
+  AU.src=u;AU.loop=$('#rd-loop').getAttribute('aria-pressed')==='true';
+}
+function rdTime(){
+  const b=$('#rd-play');if(!b)return;
+  b.textContent=AU.paused?'▶':'❚❚';b.setAttribute('aria-label',AU.paused?'播放':'暫停');
+  if(!R.seeking)$('#rd-seek').value=AU.duration?Math.round(AU.currentTime/AU.duration*1000):0;
+  $('#rd-time').textContent=fmtT(AU.currentTime)+' / '+fmtT(AU.duration);
+}
+['timeupdate','play','pause','loadedmetadata','ended'].forEach(ev=>AU.addEventListener(ev,()=>{if(R.on)rdTime()}));
+AU.addEventListener('loadedmetadata',()=>{const r=$('#rd-rate');if(r){AU.defaultPlaybackRate=AU.playbackRate=+r.value}AU.preservesPitch=true});
+addEventListener('resize',()=>{if(R.on)requestAnimationFrame(rdLayout)});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(R.on)keepAwake(true);Files.upload()});
+
+/* ---------- 曲目 detail ---------- */
+function vSong(id){
+  const s=S.songs[id],pages=s.pages||[],tracks=s.tracks||[];
+  const shows=arr('shows').filter(sh=>setlistOf(sh).includes(id)).sort(byDate).reverse();
+  let h='<section class="sec"><div class="sec-head"><h2>'+esc(s.title)+'</h2><button class="ghost" data-act="edit-song" data-id="'+id+'">編輯</button></div>';
+  if(s.sub||s.note||s.score||s.audio)h+='<div class="panel"><dl class="kv">'+(s.sub?'<dt>版本</dt><dd>'+esc(s.sub)+'</dd>':'')+(s.note?'<dt>備註</dt><dd>'+linkify(s.note)+'</dd>':'')+(s.score?'<dt>譜連結</dt><dd>'+linkify(s.score)+'</dd>':'')+(s.audio?'<dt>音檔連結</dt><dd>'+linkify(s.audio)+'</dd>':'')+'</dl></div>';
+  h+='</section><section class="sec"><div class="sec-head"><h2>樂譜 '+pages.length+' 頁</h2>'+(pages.length?'<button class="btn sm primary" data-act="read-song" data-id="'+id+'" data-i="0">看譜</button>':'')+'</div>';
+  h+='<div class="btns"><button class="btn sm" data-act="scan" data-id="'+id+'">拍照掃描</button><button class="btn sm" data-act="add-score" data-id="'+id+'">加入圖片或 PDF</button>'+(navigator.clipboard&&navigator.clipboard.read?'<button class="btn sm" data-act="paste-score" data-id="'+id+'">貼上圖片</button>':'')+'</div>';
+  h+=pages.length?'<div class="pgrid">'+pages.map((p,i)=>'<div class="pthumb"><button class="pimg" data-act="read-song" data-id="'+id+'" data-i="'+i+'" aria-label="看第 '+(i+1)+' 頁">'+fimg(p.f,'第 '+(i+1)+' 頁')+(S.ink[inkKey(p.f)]?'<span class="inked">✎</span>':'')+'</button><div class="pbar"><span class="num">'+(i+1)+'</span><button class="ghost" data-act="page-menu" data-id="'+id+'" data-i="'+i+'" aria-label="第 '+(i+1)+' 頁的選項">⋯</button></div></div>').join('')+'</div>'
+    :'<div class="empty small">拍紙本的譜、選相簿裡的照片，或匯入 PDF。電腦上也可以直接把圖片拖進來。</div>';
+  h+='</section><section class="sec"><div class="sec-head"><h2>練唱音檔</h2><button class="ghost" data-act="add-audio" data-id="'+id+'">＋ 加入</button></div>';
+  h+=tracks.length?'<ul class="list">'+tracks.map((t,i)=>'<li class="trk"><div class="sec-head"><span class="title">'+esc(t.name||'音檔')+'</span><button class="ghost" data-act="track-menu" data-id="'+id+'" data-i="'+i+'" aria-label="音檔選項">⋯</button></div><audio controls preload="metadata" data-f="'+esc(t.f)+'"'+(Files.urls[t.f]?' src="'+Files.urls[t.f]+'"':'')+'></audio></li>').join('')+'</ul>'
+    :'<div class="empty small">例如各聲部的練唱音檔、老師的示範錄音。看譜時也能在下方播放。</div>';
+  h+='</section>';
+  if(shows.length)h+='<section class="sec"><h2>演出歌單裡有這首</h2><ul class="list">'+shows.map(showRow).join('')+'</ul></section>';
+  return h;
+}
+/* ---------- 演出歌單 ---------- */
+function vSetlist(s,id){
+  const list=setlistOf(s);
+  let h='<section class="sec"><div class="sec-head"><h2>演出歌單 '+list.length+' 首</h2>'+(list.length?'<button class="btn sm primary" data-act="sl-start" data-id="'+id+'">開始翻譜</button>':'')+'</div>';
+  if(!Array.isArray(s.setlist)&&list.length)h+='<div class="small muted">照場幕表的順序帶入。調整後會存成這場演出自己的歌單。</div>';
+  h+=list.length?'<ul class="list">'+list.map((sid,i)=>{const g=S.songs[sid],n=(g.pages||[]).length,tn=(g.tracks||[]).length;
+    return '<li class="row sl"><span class="no num">'+(i+1)+'</span><button class="main sl-open" data-act="sl-open" data-id="'+id+'" data-i="'+i+'"><div class="title">'+esc(g.title)+'</div><div class="sub">'+(n?n+' 頁譜':'還沒有譜')+(tn?' · '+tn+' 個音檔':'')+'</div></button>'
+      +'<button class="ghost" data-act="sl-move" data-id="'+id+'" data-i="'+i+'" data-d="-1" aria-label="往上移"'+(i?'':' disabled')+'>↑</button><button class="ghost" data-act="sl-move" data-id="'+id+'" data-i="'+i+'" data-d="1" aria-label="往下移"'+(i<list.length-1?'':' disabled')+'>↓</button><button class="ghost" data-act="sl-del" data-id="'+id+'" data-i="'+i+'" aria-label="從歌單移除">✕</button></li>'}).join('')+'</ul>'
+    :'<div class="empty small">還沒有歌。按「加歌」從曲目庫挑，或先在場幕表選好對應曲目。</div>';
+  h+='<div class="btns"><button class="btn sm" data-act="sl-add" data-id="'+id+'">＋ 加歌</button>'+(Array.isArray(s.setlist)&&(s.scenes||[]).some(x=>(x.songIds||[]).length)?'<button class="btn sm" data-act="sl-reset" data-id="'+id+'">照場幕表重排</button>':'')+'</div></section>';
+  return h;
+}
+
 /* ---------- events ---------- */
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-act],[data-tab]');if(!t)return;
-  if(t.dataset.tab){if(t.dataset.tab==='shows'&&tab==='shows')openShow=null;tab=t.dataset.tab;try{localStorage.setItem(LS+'-tab',tab)}catch(_){}render();window.scrollTo(0,0);return}
+  if(t.dataset.tab){if(t.dataset.tab==='shows'&&tab==='shows')openShow=null;if(t.dataset.tab==='songs'&&tab==='songs')openSong=null;tab=t.dataset.tab;try{localStorage.setItem(LS+'-tab',tab)}catch(_){}render();window.scrollTo(0,0);return}
   const a=t.dataset.act,id=t.dataset.id;
   switch(a){
     case 'close':closeSheet();break;
@@ -602,7 +1067,44 @@ document.addEventListener('click',async e=>{
     case 'del-member':if(confirm('刪除這位成員？')){del('members',id);closeSheet()}break;
     case 'mem-filter':memFilter=t.dataset.k;render();break;
     case 'edit-song':editSong(id);break;
-    case 'del-song':if(confirm('刪除這首歌？')){del('songs',id);closeSheet()}break;
+    case 'del-song':if(confirm('刪除這首歌？')){del('songs',id);openSong=null;closeSheet()}break;
+    case 'open-song':openSong=id;render();window.scrollTo(0,0);break;
+    case 'close-song':openSong=null;render();break;
+    case 'read-song':openReader([id],{page:+t.dataset.i});break;
+    case 'scan':openScanner(id);break;
+    case 'add-score':fileTarget=id;$('#score-file').click();break;
+    case 'paste-score':pasteScore(id);break;
+    case 'add-audio':fileTarget=id;$('#audio-file').click();break;
+    case 'page-menu':{const i=+t.dataset.i,n=(S.songs[id].pages||[]).length;sheet('第 '+(i+1)+' 頁','<div class="btns"><button class="btn" data-act="page-move" data-d="-1"'+(i?'':' disabled')+'>往前移</button><button class="btn" data-act="page-move" data-d="1"'+(i<n-1?'':' disabled')+'>往後移</button><button class="btn" data-act="page-rot">↻ 向右轉</button><button class="btn warn" data-act="page-del">刪除這頁</button></div>',null,{song:id,i});break}
+    case 'page-move':{const {song,i}=sheetExtra,j=i+(+t.dataset.d),s=clone(S.songs[song]);if(j<0||j>=s.pages.length)return;[s.pages[i],s.pages[j]]=[s.pages[j],s.pages[i]];put('songs',song,s);closeSheet();break}
+    case 'page-rot':{const {song,i}=sheetExtra;closeSheet();toast('轉方向中…');try{await rotatePage(song,i)}catch(_){toast('轉不了，稍後再試')}break}
+    case 'page-del':{const {song,i}=sheetExtra;if(!confirm('刪除這頁譜？上面的筆記也會一起刪除。'))return;const s=clone(S.songs[song]),[p]=s.pages.splice(i,1);put('songs',song,s);if(S.ink[inkKey(p.f)])del('ink',inkKey(p.f));Files.remove(p.f);closeSheet();break}
+    case 'track-menu':{const i=+t.dataset.i,tr=S.songs[id].tracks[i];sheet('練唱音檔',fld('tname','名稱（例：女高聲部、老師示範）',tr.name)+'<button class="btn sm warn" data-act="track-del">刪除這個音檔</button>',()=>{const s=clone(S.songs[id]);s.tracks[i].name=val('tname')||s.tracks[i].name;put('songs',id,s)},{song:id,i});break}
+    case 'track-del':{const {song,i}=sheetExtra;if(!confirm('刪除這個音檔？'))return;const s=clone(S.songs[song]),[x]=s.tracks.splice(i,1);put('songs',song,s);Files.remove(x.f);closeSheet();break}
+    case 'sl-start':openReader(setlistOf(S.shows[id]),{song:0},S.shows[id].title);break;
+    case 'sl-open':openReader(setlistOf(S.shows[id]),{song:+t.dataset.i},S.shows[id].title);break;
+    case 'sl-move':{const s=clone(S.shows[id]),l=setlistOf(s),i=+t.dataset.i,j=i+(+t.dataset.d);if(j<0||j>=l.length)return;[l[i],l[j]]=[l[j],l[i]];s.setlist=l;put('shows',id,s);break}
+    case 'sl-del':{const s=clone(S.shows[id]),l=setlistOf(s);l.splice(+t.dataset.i,1);s.setlist=l;put('shows',id,s);break}
+    case 'sl-add':{const songs=arr('songs').sort((a,b)=>(a.title||'').localeCompare(b.title||'','zh-Hant'));if(!songs.length){toast('曲目庫還沒有歌');return}sheet('加到歌單最後面','<div class="small muted">可以選好幾首，會照曲目庫的順序加在後面，之後再用 ↑↓ 排。</div>'+picks('sl',songs.map(x=>[x.id,x.title]),[]),()=>{const add=checked('sl');if(!add.length)return;const s=clone(S.shows[id]);s.setlist=[...setlistOf(s),...add];put('shows',id,s)});break}
+    case 'sl-reset':{if(!confirm('照場幕表的順序重排歌單？'))return;const s=clone(S.shows[id]);delete s.setlist;put('shows',id,s);break}
+    case 'rd-close':closeReader();break;
+    case 'rd-pen':R.pen=!R.pen;rdTools();requestAnimationFrame(rdLayout);break;
+    case 'rd-tool':R.tool=t.dataset.t;if(t.dataset.c)R.color=t.dataset.c;rdTools();break;
+    case 'rd-finger':R.finger=!R.finger;rdPref();rdTools();toast(R.finger?'手指也能畫（翻頁請點上面的歌名或關掉筆記）':'手指翻頁，Apple Pencil 寫字');break;
+    case 'rd-undo':{const sf=R.last&&R.surf.includes(R.last)?R.last:R.surf[0];if(sf)sf.undo();break}
+    case 'rd-clear':{if(!R.surf.some(sf=>sf.strokes.length)){toast('這頁沒有筆記');return}if(confirm('清除畫面上的筆記？（可以按「復原」救回來）'))R.surf.forEach(sf=>sf.clear());break}
+    case 'rd-audio':R.audioOpen=!R.audioOpen;rdPref();rdAudioSync();if(!R.audioOpen)AU.pause();requestAnimationFrame(rdLayout);break;
+    case 'rd-play':if(!AU.src){toast('這首沒有音檔');return}if(AU.paused)AU.play().catch(e=>toast('播放不了這個音檔（'+e.name+'）'));else AU.pause();break;
+    case 'rd-back':AU.currentTime=Math.max(0,AU.currentTime-5);break;
+    case 'rd-loop':{const on=t.getAttribute('aria-pressed')!=='true';t.setAttribute('aria-pressed',on);AU.loop=on;break}
+    case 'sc-cam':$('#sc-cam').click();break;
+    case 'sc-lib':$('#sc-lib').click();break;
+    case 'sc-close':if(SC&&SC.img&&!confirm('這張還沒加入，確定關閉？'))return;closeScanner();break;
+    case 'sc-add':scAdd();break;
+    case 'sc-skip':SC.img=null;scNext();break;
+    case 'sc-full':{const w=SC.img.width,h=SC.img.height;SC.k=[[0,0],[w,0],[w,h],[0,h]];renderScan();break}
+    case 'sc-rot':{const h=SC.img.height;SC.img=rotateCanvas(SC.img);SC.k=[3,0,1,2].map(i=>SC.k[i]).map(([x,y])=>[h-y,x]);renderScan();break}
+    case 'sc-flt':SC.filter=t.dataset.k;renderScan();break;
     case 'edit-reh':editReh(id);break;
     case 'del-reh':if(confirm('刪除這筆團練紀錄？')){del('rehearsals',id);closeSheet()}break;
     case 'new-notice':editNotice('',t.dataset.show);break;
@@ -615,12 +1117,43 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.act==='shot-tag'){const s=clone(S.shows[t.dataset.id]);const x=s.shots.find(x=>x.id===t.dataset.a);if(x){x.tag=t.value;put('shows',t.dataset.id,s)}}
+  if(t.id==='rd-jump'){R.i=Math.max(0,R.seq.findIndex(p=>p.si===+t.value));rdLayout();rdAudioSync();t.blur()}
+  if(t.id==='rd-track'){AU.pause();rdTrack(+t.value);t.blur()}
+  if(t.id==='rd-rate'){AU.defaultPlaybackRate=AU.playbackRate=+t.value;t.blur()}
+  if(t.id==='rd-seek'){R.seeking=false;if(AU.duration)AU.currentTime=t.value/1000*AU.duration;t.blur()}
 });
+$('#score-file').addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';if(fs.length&&fileTarget)addScoreFiles(fileTarget,fs)});
+['sc-cam','sc-lib'].forEach(k=>$('#'+k).addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';if(fs.length&&SC)scTake(fs)}));
+$('#audio-file').addEventListener('change',async e=>{
+  const fs=[...e.target.files],id=fileTarget;e.target.value='';if(!fs.length||!id)return;
+  toast('加入 '+fs.length+' 個音檔…');const add=[];
+  for(const f of fs){try{const ext=((/\.([a-z0-9]{2,4})$/i.exec(f.name)||[])[1]||'m4a').toLowerCase();add.push({f:await Files.add(f,ext),name:f.name.replace(/\.[^.]+$/,'')||'音檔'})}catch(err){toast('「'+f.name+'」沒加進來（'+(err.code||'錯誤')+'）')}}
+  if(add.length){const s=clone(S.songs[id]);s.tracks=[...(s.tracks||[]),...add];put('songs',id,s);toast('已加入 '+add.length+' 個音檔')}
+});
+/* Paste or drop images: into the scanner when it is open, otherwise straight onto the open song's score. */
+const scoreDropTarget=()=>SC?'scan':(tab==='songs'&&openSong&&!R.on&&$('#sheet').hidden)?'song':null;
+document.addEventListener('paste',e=>{
+  const fs=[...(e.clipboardData?.items||[])].filter(i=>i.kind==='file').map(i=>i.getAsFile()).filter(Boolean),to=scoreDropTarget();
+  if(!fs.length||!to)return;e.preventDefault();to==='scan'?scTake(fs):addScoreFiles(openSong,fs);
+});
+document.addEventListener('dragover',e=>{if(scoreDropTarget()&&[...(e.dataTransfer?.types||[])].includes('Files'))e.preventDefault()});
+document.addEventListener('drop',e=>{const fs=[...(e.dataTransfer?.files||[])],to=scoreDropTarget();if(!fs.length||!to)return;e.preventDefault();to==='scan'?scTake(fs):addScoreFiles(openSong,fs)});
 document.addEventListener('input',e=>{
   if(e.target.id==='mem-q'){memQ=e.target.value;scheduleRender()}
   if(e.target.id==='song-q'){songQ=e.target.value;scheduleRender()}
+  if(e.target.id==='sc-lv'){SC.level=+e.target.value;scPreview()}
+  if(e.target.id==='rd-seek'){R.seeking=true;if(AU.duration)$('#rd-time').textContent=fmtT(e.target.value/1000*AU.duration)+' / '+fmtT(AU.duration)}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#viewer').hidden){$('#viewer').hidden=true}else if(!$('#sheet').hidden)closeSheet()}});
+document.addEventListener('keydown',e=>{
+  if(R.on){ // page-turn pedals send arrow or page keys
+    if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName||'')&&e.key!=='Escape')return;
+    if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();rdGo(1)}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();rdGo(-1)}
+    else if(e.key==='Escape')closeReader();
+    return;
+  }
+  if(SC&&e.key==='Escape'){closeScanner();return}
+  if(e.key==='Escape'){if(!$('#viewer').hidden){$('#viewer').hidden=true}else if(!$('#sheet').hidden)closeSheet()}});
 let tt=null;
 function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTimeout(tt);tt=setTimeout(()=>el.hidden=true,2600)}
 
@@ -641,6 +1174,7 @@ async function importFromHash(){
 try{const tb=localStorage.getItem(LS+'-tab');if(tb&&TITLES[tb])tab=tb}catch(_){}
 loadCache(); render();
 importFromHash();
+setTimeout(()=>Files.upload(),4000);
 (async()=>{
   const c=window.claude;
   if(c&&c.use){
@@ -660,7 +1194,6 @@ importFromHash();
 })();
 })();
 </script>
-
 <a class="to-origina" href="https://fuwei0618-cmd.github.io/Entry/map/" aria-label="回到 Origina 地圖">↖ Origina</a>
 <script>if(window.top!==window.self){var _o=document.querySelector(".to-origina");_o&&_o.remove();}</script>
 <style>.to-origina{position:fixed;left:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9;font:600 12px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.04em;text-decoration:none;color:#2B2724;background:rgba(236,232,225,.88);border:1px solid rgba(43,39,36,.18);border-radius:999px;padding:7px 11px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}</style>
