@@ -155,12 +155,12 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 #viewer .vi{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:0 8px calc(16px + env(safe-area-inset-bottom,0px))}
 #viewer img{max-width:100%;height:auto}
 /* scores: page thumbnails, practice tracks, setlist */
-.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media (min-width:560px){.pgrid{grid-template-columns:repeat(4,1fr)}}
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (min-width:560px){.pgrid{grid-template-columns:repeat(3,1fr)}}
 .pthumb{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .pimg{position:relative;display:block;width:100%;aspect-ratio:3/4;padding:0;border:0;background:#fff}
 .pimg img{width:100%;height:100%;object-fit:contain;display:block}
-.pimg .inked{position:absolute;right:4px;top:4px;font-size:12px;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:0 6px}
+.pimg .tink{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
 .pbar{display:flex;align-items:center;justify-content:space-between;padding:0 2px 0 10px;font-size:13px;color:var(--muted)}
 .pbar .ghost{min-height:34px;padding:4px 10px}
 .nofile{display:grid;place-items:center;width:100%;height:100%;padding:8px;font-size:12px;color:#6E5F63;text-align:center;background:#F4F0EE}
@@ -328,6 +328,7 @@ function render(){
   if(inSong&&(PZ.playing||[...document.querySelectorAll('#main audio')].some(a=>!a.paused)))return; // re-rendering would stop what is playing
   $('#main').innerHTML=warn+(inShow?vShow(openShow):inSong?vSong(openSong):{shows:vShows,reh:vReh,songs:vSongs,members:vMembers,notices:vNotices}[tab]());
   hydrate($('#main'));
+  document.querySelectorAll('#main canvas.tink').forEach(drawThumbInk);
   if(inSong&&S.songs[openSong].xml){if(PZ.id===openSong&&(PZ.score||PZ.err))pzPanel();else{pzPanel();pzLoad(openSong)}}
   if(f==='mem-q'||f==='song-q'){const i=$('#'+f);if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
 }
@@ -1011,6 +1012,12 @@ function makeSurface(pg,p){
   sf.text=(x,y,t)=>{sf.snap();const[c,sz]=curPen();sf.strokes.push({t:'tx',c,w:Math.round((16+sz*2)*u),p:[Math.round(x),Math.round(y)],s:t});sf.save();sf.redraw();R.last=sf};
   return sf;
 }
+/* Thumbnails on the song page show the page's notes; the canvas sits over the image at the image's aspect ratio. */
+function drawThumbInk(cv){
+  const box=cv.parentElement.getBoundingClientRect(),w=+cv.dataset.w,h=+cv.dataset.h,k=Math.min(box.width/w,box.height/h),d=Math.min(2,window.devicePixelRatio||1);
+  if(!k)return;cv.style.width=w*k+'px';cv.style.height=h*k+'px';cv.width=Math.round(w*k*d);cv.height=Math.round(h*k*d);
+  const ctx=cv.getContext('2d');ctx.setTransform(k*d,0,0,k*d,0,0);((S.ink[cv.dataset.k]||{}).s||[]).forEach(st=>drawStroke(ctx,st));
+}
 /* The audio bar follows the song on screen; a track is only fetched once the bar is open. */
 const fmtT=t=>isFinite(t)?Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'):'0:00';
 function rdAudioSync(){
@@ -1060,9 +1067,9 @@ function vSong(id){
   const shows=arr('shows').filter(sh=>setlistOf(sh).includes(id)).sort(byDate).reverse();
   let h='<section class="sec"><div class="sec-head"><h2>'+esc(s.title)+'</h2><button class="ghost" data-act="edit-song" data-id="'+id+'">編輯</button></div>';
   if(s.sub||s.note||s.score||s.audio)h+='<div class="panel"><dl class="kv">'+(s.sub?'<dt>版本</dt><dd>'+esc(s.sub)+'</dd>':'')+(s.note?'<dt>備註</dt><dd>'+linkify(s.note)+'</dd>':'')+(s.score?'<dt>譜連結</dt><dd>'+linkify(s.score)+'</dd>':'')+(s.audio?'<dt>音檔連結</dt><dd>'+linkify(s.audio)+'</dd>':'')+'</dl></div>';
-  h+='</section><section class="sec"><div class="sec-head"><h2>樂譜 '+pages.length+' 頁</h2>'+(pages.length?'<button class="btn sm primary" data-act="read-song" data-id="'+id+'" data-i="0">看譜</button>':'')+'</div>';
+  h+='</section><section class="sec"><div class="sec-head"><h2>樂譜 '+pages.length+' 頁</h2>'+(pages.length?'<div class="btns"><button class="btn sm" data-act="write-song" data-id="'+id+'">✎ 寫筆記</button><button class="btn sm primary" data-act="read-song" data-id="'+id+'" data-i="0">看譜</button></div>':'')+'</div>';
   h+='<div class="btns"><button class="btn sm" data-act="scan" data-id="'+id+'">拍照掃描</button><button class="btn sm" data-act="add-score" data-id="'+id+'">加入圖片或 PDF</button>'+(navigator.clipboard&&navigator.clipboard.read?'<button class="btn sm" data-act="paste-score" data-id="'+id+'">貼上圖片</button>':'')+'</div>';
-  h+=pages.length?'<div class="pgrid">'+pages.map((p,i)=>'<div class="pthumb"><button class="pimg" data-act="read-song" data-id="'+id+'" data-i="'+i+'" aria-label="看第 '+(i+1)+' 頁">'+fimg(p.f,'第 '+(i+1)+' 頁')+(S.ink[inkKey(p.f)]?'<span class="inked">✎</span>':'')+'</button><div class="pbar"><span class="num">'+(i+1)+'</span><button class="ghost" data-act="page-menu" data-id="'+id+'" data-i="'+i+'" aria-label="第 '+(i+1)+' 頁的選項">⋯</button></div></div>').join('')+'</div>'
+  h+=pages.length?'<div class="pgrid">'+pages.map((p,i)=>'<div class="pthumb"><button class="pimg" data-act="read-song" data-id="'+id+'" data-i="'+i+'" aria-label="看第 '+(i+1)+' 頁">'+fimg(p.f,'第 '+(i+1)+' 頁')+(S.ink[inkKey(p.f)]?'<canvas class="tink" data-k="'+inkKey(p.f)+'" data-w="'+(p.w||1000)+'" data-h="'+(p.h||1414)+'"></canvas>':'')+'</button><div class="pbar"><span class="num">'+(i+1)+'</span><button class="ghost" data-act="page-menu" data-id="'+id+'" data-i="'+i+'" aria-label="第 '+(i+1)+' 頁的選項">⋯</button></div></div>').join('')+'</div>'
     :'<div class="empty small">拍紙本的譜、選相簿裡的照片，或匯入 PDF。電腦上也可以直接把圖片拖進來。</div>';
   h+='</section><section class="sec"><div class="sec-head"><h2>練唱音檔</h2><button class="ghost" data-act="add-audio" data-id="'+id+'">＋ 加入</button></div>';
   h+=tracks.length?'<ul class="list">'+tracks.map((t,i)=>'<li class="trk"><div class="sec-head"><span class="title">'+esc(t.name||'音檔')+'</span><button class="ghost" data-act="track-menu" data-id="'+id+'" data-i="'+i+'" aria-label="音檔選項">⋯</button></div><audio controls preload="metadata" data-f="'+esc(t.f)+'"'+(Files.urls[t.f]?' src="'+Files.urls[t.f]+'"':'')+'></audio></li>').join('')+'</ul>'
@@ -1257,6 +1264,7 @@ document.addEventListener('click',async e=>{
     case 'open-song':openSong=id;render();window.scrollTo(0,0);break;
     case 'close-song':openSong=null;render();break;
     case 'read-song':openReader([id],{page:+t.dataset.i});break;
+    case 'write-song':openReader([id],{page:0});R.pen=true;rdTools();requestAnimationFrame(rdLayout);break;
     case 'scan':openScanner(id);break;
     case 'add-score':fileTarget=id;$('#score-file').click();break;
     case 'paste-score':pasteScore(id);break;
