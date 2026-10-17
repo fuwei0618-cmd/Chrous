@@ -185,10 +185,24 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 #rd-pg{font-size:13px;opacity:.75;white-space:nowrap}
 @media (max-width:480px){#rd-pg{display:none}}
 .rd-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0 10px 8px}
-#reader .rd-tools .pen{width:40px;padding:0;display:grid;place-items:center}
-.rd-tools .pen i{width:18px;height:18px;border-radius:50%;display:block;border:2px solid rgba(255,255,255,.75)}
-.rd-tools .pen.hl i{border-radius:4px;width:22px;height:12px}
 .rd-tools .sep{flex:1}
+.rd-main{flex:1;min-height:0;display:flex;position:relative}
+.rd-rail{width:58px;flex:none;display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0;overflow-y:auto}
+#reader .rd-rail button.pre{width:44px;height:44px;min-height:0;flex:none;padding:0;border-radius:50%;border:0;background:var(--c);color:#fff;position:relative;display:grid;place-items:center;text-shadow:0 1px 2px rgba(0,0,0,.5);box-shadow:inset 0 -6px 10px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.35)}
+#reader .rd-rail button.pre.hl{background:color-mix(in srgb,var(--c) 70%,#fff)}
+#reader .rd-rail button.pre[aria-pressed="true"]{background:var(--c);box-shadow:0 0 0 3px #2A2426,0 0 0 5px #F4EFE7}
+#reader .rd-rail button.pre.hl[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 70%,#fff)}
+.rd-rail .pre b{font-size:18px;line-height:1}
+.rd-rail .pre span{position:absolute;right:4px;bottom:2px;font-size:10px;font-weight:700}
+.rd-rail .pre.er i{display:block;border-radius:50%;border:2px solid #fff}
+#reader .rd-rail button.add{background:rgba(255,255,255,.1);border:1px dashed rgba(255,255,255,.4);box-shadow:none;font-size:20px}
+.rd-edit{position:absolute;right:66px;top:8px;width:min(270px,calc(100% - 80px));background:#3A3234;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px;z-index:3;display:grid;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.rd-edit-head{display:flex;align-items:center;justify-content:space-between}
+.rd-cols{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+#reader .rd-cols button{width:100%;aspect-ratio:1;min-height:0;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.25)}
+#reader .rd-cols button[aria-pressed="true"]{border-color:#2A2426;box-shadow:0 0 0 2px #F4EFE7}
+.rd-size{display:grid;gap:4px;font-size:13px}
+.rd-size input{accent-color:#E58FA9;width:100%}
 .rd-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;touch-action:none;overflow:hidden}
 .rd-page{position:relative;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.45);flex:none;overflow:hidden}
 .rd-page img{width:100%;height:100%;display:block;pointer-events:none;-webkit-touch-callout:none}
@@ -200,7 +214,7 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 .rd-ctl input[type=range]{flex:1;min-width:50px;accent-color:#E58FA9}
 #rd-time{font-size:12px;opacity:.8;white-space:nowrap}
 @media (max-width:480px){#rd-time{display:none}#reader .rd-ctl button,#reader .rd-ctl select{padding:4px 9px}}
-#reader.bare .rd-top,#reader.bare .rd-tools,#reader.bare .rd-audio{display:none}
+#reader.bare .rd-top,#reader.bare .rd-tools,#reader.bare .rd-rail,#reader.bare .rd-edit,#reader.bare .rd-audio{display:none}
 body.full .osync{display:none!important} /* OneDrive badge would cover the reader's controls */
 /* scanner */
 #scan{position:fixed;inset:0;z-index:46;background:var(--bg);display:flex;flex-direction:column}
@@ -840,8 +854,14 @@ async function rotatePage(id,i){
 
 /* ---------- 看譜：翻頁、畫筆、練唱音檔 ---------- */
 const inkKey=f=>String(f).replace(/[^A-Za-z0-9_-]/g,'_');
-const PENS=[['pen','#D0312D','紅筆'],['pen','#1F5FBF','藍筆'],['pen','#222222','黑筆'],['hl','#FFD400','螢光筆']];
-const R={on:false,seq:[],i:0,list:[],pen:false,tool:'pen',color:'#D0312D',finger:true,surf:[],undo:{},last:null,g:null,audioOpen:false,asid:null,lock:null};
+/* Pen presets, Collanote style: each tool keeps its own row of [color, size] pens on the right rail. Kept per device. */
+const PEN0={pen:[['#222222',3],['#D0312D',3],['#1F5FBF',3],['#1E8A4C',3]],hl:[['#FFD400',16],['#7ED957',16],['#6EC6F0',16],['#FF8FB1',16]],tx:[['#D0312D',12],['#1F5FBF',12],['#222222',12]],eraser:[['',8],['',18],['',36]]};
+const PEN_COLORS=['#222222','#6E5F63','#D0312D','#E8664A','#F0A030','#FFD400','#7ED957','#1E8A4C','#6EC6F0','#1F5FBF','#7A4FB5','#FF8FB1','#A0522D','#FFFFFF'];
+const TOOL_NAMES={pen:'筆',hl:'螢光筆',tx:'文字',eraser:'橡皮擦'};
+const R={on:false,seq:[],i:0,list:[],pen:false,tool:'pen',finger:true,surf:[],undo:{},last:null,g:null,audioOpen:false,asid:null,lock:null,presets:clone(PEN0),sel:{pen:1,hl:0,tx:0,eraser:1}};
+try{const v=JSON.parse(localStorage.getItem(LS+'-pens')||'null');if(v&&v.presets){Object.keys(PEN0).forEach(k=>{if(Array.isArray(v.presets[k])&&v.presets[k].length)R.presets[k]=v.presets[k]});Object.assign(R.sel,v.sel||{})}}catch(_){}
+function penPref(){try{localStorage.setItem(LS+'-pens',JSON.stringify({presets:R.presets,sel:R.sel}))}catch(_){}}
+const curPen=()=>{const l=R.presets[R.tool];return l[Math.min(R.sel[R.tool]||0,l.length-1)]};
 try{const v=JSON.parse(localStorage.getItem(LS+'-reader')||'{}');if(typeof v.finger==='boolean')R.finger=v.finger;R.audioOpen=!!v.audioOpen}catch(_){}
 function rdPref(){try{localStorage.setItem(LS+'-reader',JSON.stringify({finger:R.finger,audioOpen:R.audioOpen}))}catch(_){}}
 const AU=new Audio();
@@ -859,9 +879,9 @@ function openReader(list,opt,title){
   el.innerHTML='<div class="rd-top"><button data-act="rd-close">‹ 關閉</button><div class="rd-t">'
     +(list.length>1?'<select id="rd-jump" aria-label="跳到哪一首">'+list.map((sid,i)=>'<option value="'+i+'">'+(i+1)+'. '+esc(S.songs[sid].title)+'</option>').join('')+'</select>':'<b>'+esc(title||S.songs[list[0]].title)+'</b>')
     +'<span id="rd-pg" class="num"></span></div><button data-act="rd-pen" id="rd-penbtn">✎ 筆記</button><button data-act="rd-audio" id="rd-audbtn">♪ 音檔</button></div>'
-    +'<div class="rd-tools" id="rd-tools" hidden>'+PENS.map(([t,c,l])=>'<button class="pen'+(t==='hl'?' hl':'')+'" data-act="rd-tool" data-t="'+t+'" data-c="'+c+'" aria-label="'+l+'"><i style="background:'+c+'"></i></button>').join('')
-    +'<button data-act="rd-tool" data-t="tx">T 打字</button><button data-act="rd-tool" data-t="eraser">橡皮擦</button><button data-act="rd-undo">復原</button><button data-act="rd-clear">清除</button><span class="sep"></span><button data-act="rd-finger" id="rd-finger">手指也能畫</button></div>'
-    +'<div class="rd-stage" id="rd-stage"></div>'
+    +'<div class="rd-tools" id="rd-tools" hidden>'+[['pen','✒︎ 筆'],['hl','▮ 螢光筆'],['eraser','⌫ 橡皮擦'],['tx','T 文字']].map(([t,l])=>'<button data-act="rd-tool" data-t="'+t+'">'+l+'</button>').join('')
+    +'<span class="sep"></span><button data-act="rd-undo" aria-label="復原">↶</button><button data-act="rd-redo" aria-label="重做">↷</button><button data-act="rd-clear">清除</button><button data-act="rd-finger" id="rd-finger">手指也能畫</button></div>'
+    +'<div class="rd-main"><div class="rd-stage" id="rd-stage"></div><div class="rd-rail" id="rd-rail" hidden></div><div class="rd-edit" id="rd-edit" hidden></div></div>'
     +'<div class="rd-audio" id="rd-audio" hidden><select id="rd-track" aria-label="選音檔"></select><div class="rd-ctl"><button data-act="rd-back" aria-label="倒退 5 秒">↺5</button><button data-act="rd-play" id="rd-play" aria-label="播放">▶</button><input type="range" id="rd-seek" min="0" max="1000" value="0" aria-label="播放進度"><span id="rd-time" class="num">0:00</span><select id="rd-rate" aria-label="播放速度"><option value="0.75">0.75×</option><option value="0.85">0.85×</option><option value="1" selected>1×</option><option value="1.1">1.1×</option></select><button data-act="rd-loop" id="rd-loop" aria-pressed="false">重複</button></div></div>';
   el.hidden=false;el.classList.remove('bare');document.body.style.overflow='hidden';document.body.classList.add('full');
   rdBind($('#rd-stage'));rdLayout();rdTools();rdAudioSync();keepAwake(true);
@@ -892,8 +912,21 @@ function rdGo(d){
   R.i=j;rdLayout();rdAudioSync();
 }
 function rdTools(){
-  $('#rd-tools').hidden=!R.pen;$('#rd-penbtn').setAttribute('aria-pressed',R.pen);$('#rd-finger').setAttribute('aria-pressed',R.finger);
-  document.querySelectorAll('#rd-tools [data-act=rd-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===R.tool&&(!b.dataset.c||b.dataset.c===R.color)));
+  $('#rd-tools').hidden=$('#rd-rail').hidden=!R.pen;if(!R.pen)$('#rd-edit').hidden=true;
+  $('#rd-penbtn').setAttribute('aria-pressed',R.pen);$('#rd-finger').setAttribute('aria-pressed',R.finger);
+  document.querySelectorAll('#rd-tools [data-act=rd-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===R.tool));
+  const l=R.presets[R.tool],si=Math.min(R.sel[R.tool]||0,l.length-1),er=R.tool==='eraser';
+  $('#rd-rail').innerHTML=l.map(([c,sz],i)=>'<button class="pre'+(R.tool==='hl'?' hl':'')+(er?' er':'')+'" data-act="rd-pre" data-i="'+i+'" aria-pressed="'+(i===si)+'" aria-label="'+TOOL_NAMES[R.tool]+' '+(i+1)+'，粗細 '+sz+(i===si?'，再點一下可以調整':'')+'" style="--c:'+(c||'#5A5153')+'">'
+    +(er?'<i style="width:'+Math.min(30,6+sz*.6)+'px;height:'+Math.min(30,6+sz*.6)+'px"></i>':'<b>'+(R.tool==='tx'?'T':'✎')+'</b>')+'<span>'+sz+'</span></button>').join('')
+    +(er?'':'<button class="pre add" data-act="rd-pre-add" aria-label="新增一支'+TOOL_NAMES[R.tool]+'">＋</button>');
+}
+function rdEdit(){
+  const ed=$('#rd-edit'),l=R.presets[R.tool],i=Math.min(R.sel[R.tool]||0,l.length-1),[c,sz]=l[i],er=R.tool==='eraser';
+  ed.hidden=false;
+  ed.innerHTML='<div class="rd-edit-head"><b>'+TOOL_NAMES[R.tool]+' '+(i+1)+'</b><button data-act="rd-edit-close">完成</button></div>'
+    +(er?'':'<div class="rd-cols">'+PEN_COLORS.map(x=>'<button data-act="rd-col" data-c="'+x+'" aria-label="顏色 '+x+'" aria-pressed="'+(x===c)+'" style="background:'+x+'"></button>').join('')+'</div>')
+    +'<label class="rd-size"><span>粗細 <b id="rd-szv" class="num">'+sz+'</b></span><input type="range" id="rd-sz" min="1" max="'+(er?60:30)+'" value="'+sz+'"></label>'
+    +(!er&&l.length>1?'<button data-act="rd-pre-del">刪除這支'+TOOL_NAMES[R.tool]+'</button>':'');
 }
 function rdBind(st){
   st.addEventListener('pointerdown',e=>{
@@ -948,17 +981,18 @@ function hitErase(strokes,x,y,r){
 }
 /* Ink is stored per page in page pixels (the 'ink' collection, keyed by the page's file id), so it lines up at any screen size. */
 function makeSurface(pg,p){
-  const cv=pg.querySelector('canvas'),ctx=cv.getContext('2d'),key=inkKey(p.f),u=p.w/1500,und=R.undo[key]||(R.undo[key]=[]);
+  const cv=pg.querySelector('canvas'),ctx=cv.getContext('2d'),key=inkKey(p.f),u=p.w/1500,hist=R.undo[key]||(R.undo[key]={u:[],r:[]}),und=hist.u;
   const sf={key,strokes:clone((S.ink[key]||{}).s||[]),live:null,k:1};
   if(!Array.isArray(sf.strokes))sf.strokes=[];
   sf.at=e=>{const r=pg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*p.w,y:(e.clientY-r.top)/r.height*p.h}};
   sf.resize=()=>{const r=pg.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));sf.k=cv.width/p.w;sf.redraw()};
   sf.redraw=()=>{ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.setTransform(sf.k,0,0,sf.k,0,0);sf.strokes.forEach(st=>drawStroke(ctx,st));if(sf.live)drawStroke(ctx,sf.live)};
   sf.save=()=>{if(sf.strokes.length)put('ink',key,{s:sf.strokes,ts:Date.now()});else if(S.ink[key])del('ink',key)};
-  sf.snap=()=>{und.push(JSON.stringify(sf.strokes));if(und.length>40)und.shift()};
-  sf.undo=()=>{const v=und.pop();if(v==null){toast('沒有可以復原的筆畫');return}sf.strokes=JSON.parse(v);sf.save();sf.redraw()};
+  sf.snap=()=>{und.push(JSON.stringify(sf.strokes));if(und.length>40)und.shift();hist.r=[]};
+  sf.undo=()=>{const v=und.pop();if(v==null){toast('沒有可以復原的筆畫');return}hist.r.push(JSON.stringify(sf.strokes));sf.strokes=JSON.parse(v);sf.save();sf.redraw()};
+  sf.redo=()=>{const v=hist.r.pop();if(v==null){toast('沒有可以重做的筆畫');return}und.push(JSON.stringify(sf.strokes));sf.strokes=JSON.parse(v);sf.save();sf.redraw()};
   sf.clear=()=>{if(!sf.strokes.length)return;sf.snap();sf.strokes=[];sf.save();sf.redraw()};
-  sf.begin=(x,y)=>{sf.snap();if(R.tool==='eraser'){sf.erasing=true;sf.erase(x,y);return}sf.live={t:R.tool,c:R.color,w:Math.round((R.tool==='hl'?28:5)*u*10)/10,p:[Math.round(x),Math.round(y)]};sf.redraw()};
+  sf.begin=(x,y)=>{sf.snap();if(R.tool==='eraser'){sf.erasing=true;sf.erase(x,y);return}const[c,sz]=curPen();sf.live={t:R.tool,c,w:Math.round((R.tool==='hl'?4+sz*1.5:.8+sz*1.2)*u*10)/10,p:[Math.round(x),Math.round(y)]};sf.redraw()};
   sf.move=(x,y)=>{
     if(sf.erasing){sf.erase(x,y);return}
     if(!sf.live)return;const q=sf.live.p,lx=q[q.length-2],ly=q[q.length-1];
@@ -970,8 +1004,8 @@ function makeSurface(pg,p){
     if(sf.live){sf.strokes.push(sf.live);sf.live=null;sf.save();sf.redraw()}
   };
   sf.cancel=()=>{sf.live=null;sf.erasing=false;const v=und.pop();if(v!=null)sf.strokes=JSON.parse(v);sf.redraw()};
-  sf.erase=(x,y)=>{const n=hitErase(sf.strokes,x,y,16*u);if(n.length!==sf.strokes.length){sf.strokes=n;sf.redraw()}};
-  sf.text=(x,y,t)=>{sf.snap();sf.strokes.push({t:'tx',c:R.color==='#FFD400'?'#D0312D':R.color,w:Math.round(40*u),p:[Math.round(x),Math.round(y)],s:t});sf.save();sf.redraw();R.last=sf};
+  sf.erase=(x,y)=>{const n=hitErase(sf.strokes,x,y,curPen()[1]*u);if(n.length!==sf.strokes.length){sf.strokes=n;sf.redraw()}};
+  sf.text=(x,y,t)=>{sf.snap();const[c,sz]=curPen();sf.strokes.push({t:'tx',c,w:Math.round((16+sz*2)*u),p:[Math.round(x),Math.round(y)],s:t});sf.save();sf.redraw();R.last=sf};
   return sf;
 }
 /* The audio bar follows the song on screen; a track is only fetched once the bar is open. */
@@ -1089,7 +1123,13 @@ document.addEventListener('click',async e=>{
     case 'sl-reset':{if(!confirm('照場幕表的順序重排歌單？'))return;const s=clone(S.shows[id]);delete s.setlist;put('shows',id,s);break}
     case 'rd-close':closeReader();break;
     case 'rd-pen':R.pen=!R.pen;rdTools();requestAnimationFrame(rdLayout);break;
-    case 'rd-tool':R.tool=t.dataset.t;if(t.dataset.c)R.color=t.dataset.c;rdTools();break;
+    case 'rd-tool':R.tool=t.dataset.t;$('#rd-edit').hidden=true;rdTools();break;
+    case 'rd-pre':{const i=+t.dataset.i;if(R.sel[R.tool]===i&&$('#rd-edit').hidden){rdEdit();break}R.sel[R.tool]=i;penPref();rdTools();if(!$('#rd-edit').hidden)rdEdit();break}
+    case 'rd-pre-add':{const l=R.presets[R.tool];l.push([...curPen()]);R.sel[R.tool]=l.length-1;penPref();rdTools();rdEdit();break}
+    case 'rd-pre-del':{const l=R.presets[R.tool];l.splice(R.sel[R.tool],1);R.sel[R.tool]=Math.max(0,R.sel[R.tool]-1);penPref();rdTools();$('#rd-edit').hidden=true;break}
+    case 'rd-col':curPen()[0]=t.dataset.c;penPref();rdTools();rdEdit();break;
+    case 'rd-edit-close':$('#rd-edit').hidden=true;break;
+    case 'rd-redo':{const sf=R.last&&R.surf.includes(R.last)?R.last:R.surf[0];if(sf)sf.redo();break}
     case 'rd-finger':R.finger=!R.finger;rdPref();rdTools();toast(R.finger?'手指也能畫（翻頁請點上面的歌名或關掉筆記）':'手指翻頁，Apple Pencil 寫字');break;
     case 'rd-undo':{const sf=R.last&&R.surf.includes(R.last)?R.last:R.surf[0];if(sf)sf.undo();break}
     case 'rd-clear':{if(!R.surf.some(sf=>sf.strokes.length)){toast('這頁沒有筆記');return}if(confirm('清除畫面上的筆記？（可以按「復原」救回來）'))R.surf.forEach(sf=>sf.clear());break}
@@ -1141,6 +1181,7 @@ document.addEventListener('drop',e=>{const fs=[...(e.dataTransfer?.files||[])],t
 document.addEventListener('input',e=>{
   if(e.target.id==='mem-q'){memQ=e.target.value;scheduleRender()}
   if(e.target.id==='song-q'){songQ=e.target.value;scheduleRender()}
+  if(e.target.id==='rd-sz'){curPen()[1]=+e.target.value;$('#rd-szv').textContent=e.target.value;penPref();rdTools()}
   if(e.target.id==='sc-lv'){SC.level=+e.target.value;scPreview()}
   if(e.target.id==='rd-seek'){R.seeking=true;if(AU.duration)$('#rd-time').textContent=fmtT(e.target.value/1000*AU.duration)+' / '+fmtT(AU.duration)}
 });
