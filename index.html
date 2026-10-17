@@ -324,7 +324,7 @@ function render(){
   const empty=COLS.every(c=>!Object.keys(S[c]).length);
   if(mode==='loading'&&empty){$('#main').innerHTML='<div class="empty"><div class="think" style="justify-content:center"><span class="dot"></span>正在連上雲端資料…</div></div>';return}
   const warn=mode==='local'&&!PAGES?'<div class="banner warn" style="margin-bottom:14px">這個畫面沒有連上雲端資料庫，'+(usingSnap?'現在顯示的是 10/10 的備份內容，':'')+'修改只會存在這台裝置。請從 claude.ai 或 Claude App 登入後開啟這個 app。</div>':'';
-  if(PZ.playing&&!(inSong&&openSong===PZ.id))pzStop();
+  if(PZ.playing&&!R.on&&!(inSong&&openSong===PZ.id))pzStop(); // the reader saves ink while the piano plays; that must not stop it
   if(inSong&&(PZ.playing||[...document.querySelectorAll('#main audio')].some(a=>!a.paused)))return; // re-rendering would stop what is playing
   $('#main').innerHTML=warn+(inShow?vShow(openShow):inSong?vSong(openSong):{shows:vShows,reh:vReh,songs:vSongs,members:vMembers,notices:vNotices}[tab]());
   hydrate($('#main'));
@@ -891,7 +891,7 @@ function openReader(list,opt,title){
   try{if(!localStorage.getItem(LS+'-reader-tip')){toast('點畫面左右兩邊或左右滑翻頁，點中間隱藏工具列');localStorage.setItem(LS+'-reader-tip','1')}}catch(_){}
   (async()=>{for(const p of R.seq)if(p.f&&R.on)await Files.url(p.f)})(); // cache every page now so the score still opens offline
 }
-function closeReader(){R.on=false;AU.pause();keepAwake(false);$('#reader').hidden=true;$('#reader').innerHTML='';document.body.style.overflow='';document.body.classList.remove('full');render()}
+function closeReader(){R.on=false;AU.pause();if(R.piano){R.piano=false;pzStop(true)}keepAwake(false);$('#reader').hidden=true;$('#reader').innerHTML='';document.body.style.overflow='';document.body.classList.remove('full');render()}
 async function keepAwake(on){try{if(R.lock){R.lock.release();R.lock=null}if(on&&navigator.wakeLock)R.lock=await navigator.wakeLock.request('screen')}catch(_){}}
 function rdLayout(){
   const st=$('#rd-stage');if(!st)return;
@@ -1015,14 +1015,14 @@ function makeSurface(pg,p){
 const fmtT=t=>isFinite(t)?Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'):'0:00';
 function rdAudioSync(){
   const bar=$('#rd-audio');if(!bar)return;
-  const anyTracks=R.list.some(x=>(S.songs[x].tracks||[]).length),sid=R.seq[R.i].sid,tr=S.songs[sid].tracks||[];
+  const has=x=>(S.songs[x].tracks||[]).length||S.songs[x].xml,anyTracks=R.list.some(has),sid=R.seq[R.i].sid,s=S.songs[sid],tr=s.tracks||[];
   $('#rd-audbtn').hidden=!anyTracks;$('#rd-audbtn').setAttribute('aria-pressed',R.audioOpen&&anyTracks);
-  bar.hidden=!(R.audioOpen&&tr.length);
-  if(R.asid&&R.asid!==sid){R.asid=null;AU.pause();AU.removeAttribute('src');AU.load()} // a new song stops the last song's track
+  bar.hidden=!(R.audioOpen&&has(sid));
+  if(R.asid&&R.asid!==sid){R.asid=null;R.piano=false;pzStop();AU.pause();AU.removeAttribute('src');AU.load()} // a new song stops the last song's sound
   if(bar.hidden||R.asid===sid)return;
   R.asid=sid;
-  $('#rd-track').innerHTML=tr.map((t,i)=>'<option value="'+i+'">'+esc(S.songs[sid].title+'：'+(t.name||'音檔 '+(i+1)))+'</option>').join('');
-  rdTime();rdTrack(0);
+  $('#rd-track').innerHTML=(s.xml?'<option value="pz">'+esc(s.title)+'：鋼琴彈旋律</option>':'')+tr.map((t,i)=>'<option value="'+i+'">'+esc(s.title+'：'+(t.name||'音檔 '+(i+1)))+'</option>').join('');
+  if(s.xml)rdPiano();else{R.piano=false;rdTime();rdTrack(0)}
 }
 async function rdTrack(i){
   const sid=R.asid,t=(S.songs[sid].tracks||[])[i];if(!t)return;
@@ -1030,8 +1030,21 @@ async function rdTrack(i){
   if(!u){toast('讀不到這個音檔');return}
   AU.src=u;AU.loop=$('#rd-loop').getAttribute('aria-pressed')==='true';
 }
+/* Piano in the reader: the seek bar and counter show bars instead of seconds. */
+async function rdPiano(){
+  const sid=R.asid;R.piano=true;AU.pause();rdTime();
+  await pzLoad(sid);if(R.asid!==sid||!R.piano)return;
+  if(PZ.err){toast(PZ.err);return}
+  rdTime();
+}
 function rdTime(){
   const b=$('#rd-play');if(!b)return;
+  if(R.piano){
+    const N=PZ.score&&PZ.id===R.asid?PZ.score.measures.length:0,cur=Math.min(N,PZ.playing?PZ.at:PZ.from)||1;
+    b.textContent=PZ.playing?'❚❚':'▶';b.setAttribute('aria-label',PZ.playing?'暫停':'播放');
+    if(!R.seeking)$('#rd-seek').value=N>1?Math.round((cur-1)/(N-1)*1000):0;
+    $('#rd-time').textContent=N?'第 '+cur+' / '+N+' 小節':'讀譜中…';return;
+  }
   b.textContent=AU.paused?'▶':'❚❚';b.setAttribute('aria-label',AU.paused?'播放':'暫停');
   if(!R.seeking)$('#rd-seek').value=AU.duration?Math.round(AU.currentTime/AU.duration*1000):0;
   $('#rd-time').textContent=fmtT(AU.currentTime)+' / '+fmtT(AU.duration);
@@ -1184,6 +1197,7 @@ function pzStop(keepPlace){
   if(PZ.ctx){PZ.ctx.close().catch(()=>{});PZ.ctx=null}
   if(PZ.playing&&keepPlace&&PZ.at)PZ.from=PZ.at;
   PZ.playing=false;const b=$('#pz-play');if(b)b.textContent='▶ 彈奏';const f=$('#pz-from');if(f)f.value=PZ.from;
+  if(R.on&&R.piano)rdTime();
 }
 function pzPlay(){
   const sc=PZ.score;if(!sc)return;
@@ -1193,14 +1207,14 @@ function pzPlay(){
   ev.sort((a,b)=>a.t-b.t);
   try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_){} // iPhone: play even when the silent switch is on
   const ctx=new (window.AudioContext||window.webkitAudioContext)(),comp=ctx.createDynamicsCompressor();comp.connect(ctx.destination);
-  PZ.ctx=ctx;PZ.playing=true;PZ.at=from;$('#pz-play').textContent='❚❚ 停止';
+  PZ.ctx=ctx;PZ.playing=true;PZ.at=from;const pb=$('#pz-play');if(pb)pb.textContent='❚❚ 停止';
   const start=ctx.currentTime+.15,endT=ev.reduce((a,e)=>Math.max(a,e.t+e.d),0);let i=0;
   const tick=()=>{
     if(PZ.ctx!==ctx)return;
     const now=ctx.currentTime-start;
     while(i<ev.length&&ev[i].t<now+1.2){const e=ev[i++];pianoNote(ctx,comp,e.midi,start+e.t,Math.max(.12,e.d),e.vel)}
     const q=sc.measures;let m=from;const pos=s0+Math.max(0,now)*rate;while(m<q.length&&scoreSec(sc,q[m].q)<=pos)m++;PZ.at=m;
-    const el=$('#pz-pos');if(el)el.textContent='第 '+q[m-1].n+' 小節';
+    const el=$('#pz-pos');if(el)el.textContent='第 '+q[m-1].n+' 小節';if(R.on&&R.piano)rdTime();
     if(now>endT+.6){pzStop();PZ.from=from;const f=$('#pz-from');if(f)f.value=from;const p=$('#pz-pos');if(p)p.textContent='彈完了'}
   };
   ctx.resume().then(()=>{tick();PZ.timer=setInterval(tick,100)});
@@ -1275,8 +1289,8 @@ document.addEventListener('click',async e=>{
     case 'rd-undo':{const sf=R.last&&R.surf.includes(R.last)?R.last:R.surf[0];if(sf)sf.undo();break}
     case 'rd-clear':{if(!R.surf.some(sf=>sf.strokes.length)){toast('這頁沒有筆記');return}if(confirm('清除畫面上的筆記？（可以按「復原」救回來）'))R.surf.forEach(sf=>sf.clear());break}
     case 'rd-audio':R.audioOpen=!R.audioOpen;rdPref();rdAudioSync();if(!R.audioOpen)AU.pause();requestAnimationFrame(rdLayout);break;
-    case 'rd-play':if(!AU.src){toast('這首沒有音檔');return}if(AU.paused)AU.play().catch(e=>toast('播放不了這個音檔（'+e.name+'）'));else AU.pause();break;
-    case 'rd-back':AU.currentTime=Math.max(0,AU.currentTime-5);break;
+    case 'rd-play':if(R.piano){if(!PZ.score||PZ.id!==R.asid)return;if(PZ.playing)pzStop(true);else pzPlay();rdTime();break}if(!AU.src){toast('這首沒有音檔');return}if(AU.paused)AU.play().catch(e=>toast('播放不了這個音檔（'+e.name+'）'));else AU.pause();break;
+    case 'rd-back':if(R.piano){const p=PZ.playing;pzStop(true);PZ.from=Math.max(1,PZ.from-2);if(p)pzPlay();rdTime();break}AU.currentTime=Math.max(0,AU.currentTime-5);break;
     case 'rd-loop':{const on=t.getAttribute('aria-pressed')!=='true';t.setAttribute('aria-pressed',on);AU.loop=on;break}
     case 'sc-cam':$('#sc-cam').click();break;
     case 'sc-lib':$('#sc-lib').click();break;
@@ -1303,9 +1317,9 @@ document.addEventListener('change',e=>{
   if(t.id==='pz-others'){PZ.others=t.checked;if(PZ.playing){pzStop(true);pzPlay()}}
   if(t.id==='pz-from'){PZ.from=Math.max(1,+t.value||1);if(PZ.playing)pzStop()}
   if(t.id==='rd-jump'){R.i=Math.max(0,R.seq.findIndex(p=>p.si===+t.value));rdLayout();rdAudioSync();t.blur()}
-  if(t.id==='rd-track'){AU.pause();rdTrack(+t.value);t.blur()}
-  if(t.id==='rd-rate'){AU.defaultPlaybackRate=AU.playbackRate=+t.value;t.blur()}
-  if(t.id==='rd-seek'){R.seeking=false;if(AU.duration)AU.currentTime=t.value/1000*AU.duration;t.blur()}
+  if(t.id==='rd-track'){AU.pause();if(t.value==='pz')rdPiano();else{R.piano=false;pzStop();rdTrack(+t.value);rdTime()}t.blur()}
+  if(t.id==='rd-rate'){AU.defaultPlaybackRate=AU.playbackRate=+t.value;PZ.rate=+t.value;if(R.piano&&PZ.playing){pzStop(true);pzPlay()}t.blur()}
+  if(t.id==='rd-seek'){R.seeking=false;if(R.piano&&PZ.score){const p=PZ.playing;pzStop();PZ.from=1+Math.round(t.value/1000*(PZ.score.measures.length-1));if(p)pzPlay();rdTime()}else if(AU.duration)AU.currentTime=t.value/1000*AU.duration;t.blur()}
 });
 $('#score-file').addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';if(fs.length&&fileTarget)addScoreFiles(fileTarget,fs)});
 ['sc-cam','sc-lib'].forEach(k=>$('#'+k).addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';if(fs.length&&SC)scTake(fs)}));
@@ -1338,7 +1352,7 @@ document.addEventListener('input',e=>{
   if(e.target.id==='song-q'){songQ=e.target.value;scheduleRender()}
   if(e.target.id==='rd-sz'){curPen()[1]=+e.target.value;$('#rd-szv').textContent=e.target.value;penPref();rdTools()}
   if(e.target.id==='sc-lv'){SC.level=+e.target.value;scPreview()}
-  if(e.target.id==='rd-seek'){R.seeking=true;if(AU.duration)$('#rd-time').textContent=fmtT(e.target.value/1000*AU.duration)+' / '+fmtT(AU.duration)}
+  if(e.target.id==='rd-seek'){R.seeking=true;if(R.piano&&PZ.score){const N=PZ.score.measures.length;$('#rd-time').textContent='第 '+(1+Math.round(e.target.value/1000*(N-1)))+' / '+N+' 小節'}else if(AU.duration)$('#rd-time').textContent=fmtT(e.target.value/1000*AU.duration)+' / '+fmtT(AU.duration)}
 });
 document.addEventListener('keydown',e=>{
   if(R.on){ // page-turn pedals send arrow or page keys
