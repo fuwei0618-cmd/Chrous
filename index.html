@@ -249,6 +249,7 @@ body.full .osync{display:none!important} /* OneDrive badge would cover the reade
 <input type="file" id="score-file" accept="image/*,application/pdf,.pdf" multiple hidden>
 <input type="file" id="sc-cam" accept="image/*" capture="environment" hidden>
 <input type="file" id="sc-lib" accept="image/*" multiple hidden>
+<input type="file" id="xml-file" hidden>
 <input type="file" id="audio-file" accept="audio/*,.m4a,.mp3,.wav,.aac" multiple hidden>
 
 <script>
@@ -323,9 +324,11 @@ function render(){
   const empty=COLS.every(c=>!Object.keys(S[c]).length);
   if(mode==='loading'&&empty){$('#main').innerHTML='<div class="empty"><div class="think" style="justify-content:center"><span class="dot"></span>正在連上雲端資料…</div></div>';return}
   const warn=mode==='local'&&!PAGES?'<div class="banner warn" style="margin-bottom:14px">這個畫面沒有連上雲端資料庫，'+(usingSnap?'現在顯示的是 10/10 的備份內容，':'')+'修改只會存在這台裝置。請從 claude.ai 或 Claude App 登入後開啟這個 app。</div>':'';
-  if(inSong&&[...document.querySelectorAll('#main audio')].some(a=>!a.paused))return; // re-rendering would stop the track that is playing
+  if(PZ.playing&&!(inSong&&openSong===PZ.id))pzStop();
+  if(inSong&&(PZ.playing||[...document.querySelectorAll('#main audio')].some(a=>!a.paused)))return; // re-rendering would stop what is playing
   $('#main').innerHTML=warn+(inShow?vShow(openShow):inSong?vSong(openSong):{shows:vShows,reh:vReh,songs:vSongs,members:vMembers,notices:vNotices}[tab]());
   hydrate($('#main'));
+  if(inSong&&S.songs[openSong].xml){if(PZ.id===openSong&&(PZ.score||PZ.err))pzPanel();else{pzPanel();pzLoad(openSong)}}
   if(f==='mem-q'||f==='song-q'){const i=$('#'+f);if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
 }
 
@@ -1051,6 +1054,9 @@ function vSong(id){
   h+='</section><section class="sec"><div class="sec-head"><h2>練唱音檔</h2><button class="ghost" data-act="add-audio" data-id="'+id+'">＋ 加入</button></div>';
   h+=tracks.length?'<ul class="list">'+tracks.map((t,i)=>'<li class="trk"><div class="sec-head"><span class="title">'+esc(t.name||'音檔')+'</span><button class="ghost" data-act="track-menu" data-id="'+id+'" data-i="'+i+'" aria-label="音檔選項">⋯</button></div><audio controls preload="metadata" data-f="'+esc(t.f)+'"'+(Files.urls[t.f]?' src="'+Files.urls[t.f]+'"':'')+'></audio></li>').join('')+'</ul>'
     :'<div class="empty small">例如各聲部的練唱音檔、老師的示範錄音。看譜時也能在下方播放。</div>';
+  h+='</section><section class="sec"><div class="sec-head"><h2>鋼琴彈旋律</h2><button class="ghost" data-act="add-xml" data-id="'+id+'">'+(s.xml?'換檔案':'＋ 匯入 MusicXML')+'</button></div>';
+  h+=s.xml?'<div class="panel pz" id="pz" data-id="'+id+'"></div><div class="sec-head"><span class="small muted">'+esc(s.xml.name||'')+'</span><button class="ghost small" data-act="del-xml" data-id="'+id+'">移除</button></div>'
+    :'<div class="empty small">先用 PlayScore 2 或 MuseScore 把譜轉成 MusicXML（.musicxml 或 .mxl），匯入後就能用鋼琴彈出女高的旋律，也能放慢、從某一小節開始。</div>';
   h+='</section>';
   if(shows.length)h+='<section class="sec"><h2>演出歌單裡有這首</h2><ul class="list">'+shows.map(showRow).join('')+'</ul></section>';
   return h;
@@ -1066,6 +1072,138 @@ function vSetlist(s,id){
     :'<div class="empty small">還沒有歌。按「加歌」從曲目庫挑，或先在場幕表選好對應曲目。</div>';
   h+='<div class="btns"><button class="btn sm" data-act="sl-add" data-id="'+id+'">＋ 加歌</button>'+(Array.isArray(s.setlist)&&(s.scenes||[]).some(x=>(x.songIds||[]).length)?'<button class="btn sm" data-act="sl-reset" data-id="'+id+'">照場幕表重排</button>':'')+'</div></section>';
   return h;
+}
+
+/* ---------- 鋼琴彈旋律：MusicXML → piano (Web Audio) ---------- */
+/* The score is turned into MusicXML elsewhere (PlayScore 2, MuseScore + Audiveris); here it is only read and played. */
+async function unzipMain(buf){ // .mxl is a zip: find the score named in META-INF/container.xml
+  const dv=new DataView(buf);let e=buf.byteLength-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error('壓縮檔讀不出來');
+  const files={};let p=dv.getUint32(e+16,true);
+  for(let i=0,n=dv.getUint16(e+10,true);i<n;i++){
+    const nl=dv.getUint16(p+28,true),name=new TextDecoder().decode(new Uint8Array(buf,p+46,nl));
+    files[name]={method:dv.getUint16(p+10,true),size:dv.getUint32(p+20,true),off:dv.getUint32(p+42,true)};
+    p+=46+nl+dv.getUint16(p+30,true)+dv.getUint16(p+32,true);
+  }
+  const read=async name=>{
+    const f=files[name],l=f.off,data=new Uint8Array(buf,l+30+dv.getUint16(l+26,true)+dv.getUint16(l+28,true),f.size);
+    return f.method===0?new TextDecoder().decode(data):new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+  };
+  let root=null;
+  if(files['META-INF/container.xml']){const m=/full-path="([^"]+)"/.exec(await read('META-INF/container.xml'));if(m&&files[m[1]])root=m[1]}
+  root=root||Object.keys(files).find(k=>!k.startsWith('META-INF')&&/\.(xml|musicxml)$/i.test(k));
+  if(!root)throw new Error('壓縮檔裡沒有樂譜');
+  return read(root);
+}
+async function musicXmlText(blob){const buf=await blob.arrayBuffer(),u=new Uint8Array(buf,0,2);return u[0]===0x50&&u[1]===0x4B?unzipMain(buf):blob.text()}
+function parseMusicXml(text){
+  const doc=new DOMParser().parseFromString(text,'application/xml');
+  if(doc.querySelector('parsererror')||!doc.querySelector('score-partwise'))throw new Error('這不是 MusicXML 譜（要 score-partwise 格式）');
+  const STEP={C:0,D:2,E:4,F:5,G:7,A:9,B:11},txt=(el,s)=>{const x=el.querySelector(s);return x?x.textContent.trim():''};
+  const names={};doc.querySelectorAll('part-list score-part').forEach(sp=>names[sp.id]=txt(sp,'part-name')||txt(sp,'part-abbreviation'));
+  const voices={},measures=[],tempos=[];
+  [...doc.querySelectorAll('score-partwise>part')].forEach((part,pi)=>{
+    let div=1,q0=0;const open={};
+    [...part.children].filter(m=>m.tagName==='measure').forEach((m,mi)=>{
+      if(pi===0)measures.push({n:m.getAttribute('number')||String(mi+1),q:q0});
+      let pos=0,max=0,last=0;
+      for(const el of m.children){
+        const t=el.tagName;
+        if(t==='attributes'){const d=txt(el,'divisions');if(d)div=+d||1}
+        else if(t==='backup')pos-=+txt(el,'duration')||0;
+        else if(t==='forward'){pos+=+txt(el,'duration')||0;max=Math.max(max,pos)}
+        else if(t==='direction'||t==='sound'){
+          const s=t==='sound'?el:el.querySelector('sound'),bpm=+(s&&s.getAttribute('tempo'))||(+txt(el,'metronome per-minute')*({half:2,eighth:.5,'quarter':1}[txt(el,'metronome beat-unit')]||1));
+          if(bpm&&pi===0)tempos.push({q:q0+pos/div,bpm});
+        }
+        else if(t==='note'){
+          if(el.querySelector('grace'))continue;
+          const dur=+txt(el,':scope>duration')||0,chord=!!el.querySelector(':scope>chord'),start=chord?last:pos;
+          if(!chord){last=pos;pos+=dur;max=Math.max(max,pos)}
+          const pt=el.querySelector(':scope>pitch');if(!pt||el.querySelector(':scope>rest'))continue;
+          const midi=12*(+txt(pt,'octave')+1)+STEP[txt(pt,'step')]+Math.round(+txt(pt,'alter')||0);
+          const key=pi+'|'+(txt(el,':scope>staff')||'1')+'|'+(txt(el,':scope>voice')||'1');
+          const vo=voices[key]||(voices[key]={key,part:pi,name:names[part.id]||'',notes:[]});
+          const q=q0+start/div,len=dur/div,ties=[...el.querySelectorAll(':scope>tie')].map(x=>x.getAttribute('type')),ok=key+'|'+midi;
+          if(ties.includes('stop')&&open[ok])open[ok].len=q+len-open[ok].q;
+          else{const n={q,len,midi};vo.notes.push(n);open[ok]=n}
+          if(!ties.includes('start'))delete open[ok];
+        }
+      }
+      q0+=max/div;
+    });
+  });
+  const list=Object.values(voices).filter(v=>v.notes.length);
+  if(!list.length)throw new Error('檔案裡找不到音符');
+  list.forEach(v=>v.avg=v.notes.reduce((a,n)=>a+n.midi,0)/v.notes.length);
+  // within each part, name voices from high to low so 「上聲部」 is the soprano line of a two-voice staff
+  const byPart={};list.forEach(v=>(byPart[v.part]=byPart[v.part]||[]).push(v));
+  Object.values(byPart).forEach(vs=>{vs.sort((a,b)=>b.avg-a.avg);vs.forEach((v,i)=>v.label=(v.name||'第 '+(v.part+1)+' 部')+(vs.length>1?'・'+(i===0?'上聲部':i===vs.length-1?'下聲部':'中間第 '+i+' 聲部'):''))});
+  list.sort((a,b)=>a.part-b.part||b.avg-a.avg);
+  const sop=list.find(v=>/sop|女高|^s\.?$|^s\b|^s\d/i.test(v.name))||list[0];
+  tempos.sort((a,b)=>a.q-b.q);if(!tempos.length||tempos[0].q>0)tempos.unshift({q:0,bpm:tempos[0]?tempos[0].bpm:90});
+  return{voices:list,def:sop.key,measures,tempos};
+}
+function scoreSec(sc,q){ // quarter-note position → seconds at written tempo
+  let s=0;const T=sc.tempos;
+  for(let i=0;i<T.length;i++){const a=T[i].q,b=i+1<T.length?Math.min(T[i+1].q,q):q;if(b<=a)break;s+=(b-a)*60/T[i].bpm}
+  return s;
+}
+const PZ={id:null,score:null,err:'',sel:'',from:1,rate:1,others:false,playing:false,ctx:null,timer:null};
+function pianoNote(ctx,out,midi,t,dur,vel){
+  const f=440*2**((midi-69)/12),g=ctx.createGain(),end=t+dur;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel,t+.006);
+  g.gain.setTargetAtTime(vel*.25,t+.006,.45); // piano tone fades even while the key is held
+  g.gain.setTargetAtTime(0,end,.07);g.connect(out);
+  [[1,1],[2,.42],[3,.2],[4,.09],[5,.05]].forEach(([h,a])=>{
+    if(f*h>12000)return;const o=ctx.createOscillator(),og=ctx.createGain();
+    o.frequency.value=f*h;og.gain.value=a;og.gain.setTargetAtTime(0,t,.25+.6/h);o.connect(og).connect(g);o.start(t);o.stop(end+.5);
+  });
+}
+async function pzLoad(id){
+  const s=S.songs[id];if(!s||!s.xml)return;
+  if(PZ.id===id&&(PZ.score||PZ.err))return;
+  PZ.id=id;PZ.score=null;PZ.err='';PZ.from=1;
+  try{const b=await Files.blob(s.xml.f);if(!b)throw new Error('讀不到檔案，連上網路後再開一次');PZ.score=parseMusicXml(await musicXmlText(b));PZ.sel=PZ.score.voices.some(v=>v.key===s.xml.voice)?s.xml.voice:PZ.score.def}
+  catch(e){PZ.err=e.message||'讀不出來'}
+  if(PZ.id===id)pzPanel();
+}
+function pzPanel(){
+  const el=$('#pz');if(!el||el.dataset.id!==PZ.id)return;
+  if(PZ.err){el.innerHTML='<div class="small" style="color:var(--warn)">'+esc(PZ.err)+'</div>';return}
+  if(!PZ.score){el.innerHTML='<div class="think"><span class="dot"></span>讀譜中…</div>';return}
+  const sc=PZ.score,bpm=Math.round(sc.tempos[0].bpm);
+  el.innerHTML='<label class="f"><span>彈哪個聲部</span><select id="pz-voice">'+sc.voices.map(v=>'<option value="'+v.key+'"'+(v.key===PZ.sel?' selected':'')+'>'+esc(v.label)+'</option>').join('')+'</select></label>'
+    +'<div class="f2"><label class="f"><span>從第幾小節（共 '+sc.measures.length+'）</span><input id="pz-from" type="number" inputmode="numeric" min="1" max="'+sc.measures.length+'" value="'+PZ.from+'"></label>'
+    +'<label class="f"><span>速度（原速 ♩='+bpm+'）</span><select id="pz-rate">'+[.5,.75,.9,1,1.1].map(r=>'<option value="'+r+'"'+(r===PZ.rate?' selected':'')+'>'+Math.round(r*100)+'%</option>').join('')+'</select></label></div>'
+    +'<label class="check" style="padding:0;min-height:0"><input type="checkbox" id="pz-others"'+(PZ.others?' checked':'')+'>其他聲部小聲陪著</label>'
+    +'<div class="btns" style="align-items:center"><button class="btn primary" data-act="pz-play" id="pz-play">'+(PZ.playing?'❚❚ 停止':'▶ 彈奏')+'</button><span class="small muted num" id="pz-pos"></span></div>';
+}
+function pzStop(keepPlace){
+  if(PZ.timer)clearInterval(PZ.timer);PZ.timer=null;
+  if(PZ.ctx){PZ.ctx.close().catch(()=>{});PZ.ctx=null}
+  if(PZ.playing&&keepPlace&&PZ.at)PZ.from=PZ.at;
+  PZ.playing=false;const b=$('#pz-play');if(b)b.textContent='▶ 彈奏';const f=$('#pz-from');if(f)f.value=PZ.from;
+}
+function pzPlay(){
+  const sc=PZ.score;if(!sc)return;
+  const from=Math.max(1,Math.min(sc.measures.length,PZ.from|0||1)),q0=sc.measures[from-1].q,s0=scoreSec(sc,q0),rate=PZ.rate;
+  const ev=[];sc.voices.forEach(v=>{const main=v.key===PZ.sel;if(!main&&!PZ.others)return;v.notes.forEach(n=>{if(n.q>=q0-1e-6)ev.push({t:(scoreSec(sc,n.q)-s0)/rate,d:(scoreSec(sc,n.q+n.len)-scoreSec(sc,n.q))/rate,midi:n.midi,vel:main?.5:.13})})});
+  if(!ev.length){toast('從這裡開始沒有音符');return}
+  ev.sort((a,b)=>a.t-b.t);
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_){} // iPhone: play even when the silent switch is on
+  const ctx=new (window.AudioContext||window.webkitAudioContext)(),comp=ctx.createDynamicsCompressor();comp.connect(ctx.destination);
+  PZ.ctx=ctx;PZ.playing=true;PZ.at=from;$('#pz-play').textContent='❚❚ 停止';
+  const start=ctx.currentTime+.15,endT=ev.reduce((a,e)=>Math.max(a,e.t+e.d),0);let i=0;
+  const tick=()=>{
+    if(PZ.ctx!==ctx)return;
+    const now=ctx.currentTime-start;
+    while(i<ev.length&&ev[i].t<now+1.2){const e=ev[i++];pianoNote(ctx,comp,e.midi,start+e.t,Math.max(.12,e.d),e.vel)}
+    const q=sc.measures;let m=from;const pos=s0+Math.max(0,now)*rate;while(m<q.length&&scoreSec(sc,q[m].q)<=pos)m++;PZ.at=m;
+    const el=$('#pz-pos');if(el)el.textContent='第 '+q[m-1].n+' 小節';
+    if(now>endT+.6){pzStop();PZ.from=from;const f=$('#pz-from');if(f)f.value=from;const p=$('#pz-pos');if(p)p.textContent='彈完了'}
+  };
+  ctx.resume().then(()=>{tick();PZ.timer=setInterval(tick,100)});
 }
 
 /* ---------- events ---------- */
@@ -1109,6 +1247,9 @@ document.addEventListener('click',async e=>{
     case 'add-score':fileTarget=id;$('#score-file').click();break;
     case 'paste-score':pasteScore(id);break;
     case 'add-audio':fileTarget=id;$('#audio-file').click();break;
+    case 'add-xml':fileTarget=id;$('#xml-file').click();break;
+    case 'del-xml':{if(!confirm('移除這個 MusicXML？'))return;pzStop();const s=clone(S.songs[id]),f=s.xml.f;delete s.xml;PZ.id=null;put('songs',id,s);Files.remove(f);break}
+    case 'pz-play':if(PZ.playing)pzStop(true);else pzPlay();break;
     case 'page-menu':{const i=+t.dataset.i,n=(S.songs[id].pages||[]).length;sheet('第 '+(i+1)+' 頁','<div class="btns"><button class="btn" data-act="page-move" data-d="-1"'+(i?'':' disabled')+'>往前移</button><button class="btn" data-act="page-move" data-d="1"'+(i<n-1?'':' disabled')+'>往後移</button><button class="btn" data-act="page-rot">↻ 向右轉</button><button class="btn warn" data-act="page-del">刪除這頁</button></div>',null,{song:id,i});break}
     case 'page-move':{const {song,i}=sheetExtra,j=i+(+t.dataset.d),s=clone(S.songs[song]);if(j<0||j>=s.pages.length)return;[s.pages[i],s.pages[j]]=[s.pages[j],s.pages[i]];put('songs',song,s);closeSheet();break}
     case 'page-rot':{const {song,i}=sheetExtra;closeSheet();toast('轉方向中…');try{await rotatePage(song,i)}catch(_){toast('轉不了，稍後再試')}break}
@@ -1157,6 +1298,10 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.act==='shot-tag'){const s=clone(S.shows[t.dataset.id]);const x=s.shots.find(x=>x.id===t.dataset.a);if(x){x.tag=t.value;put('shows',t.dataset.id,s)}}
+  if(t.id==='pz-voice'){PZ.sel=t.value;pzStop(true);const s=clone(S.songs[PZ.id]);s.xml.voice=t.value;put('songs',PZ.id,s)}
+  if(t.id==='pz-rate'){PZ.rate=+t.value;if(PZ.playing){pzStop(true);pzPlay()}}
+  if(t.id==='pz-others'){PZ.others=t.checked;if(PZ.playing){pzStop(true);pzPlay()}}
+  if(t.id==='pz-from'){PZ.from=Math.max(1,+t.value||1);if(PZ.playing)pzStop()}
   if(t.id==='rd-jump'){R.i=Math.max(0,R.seq.findIndex(p=>p.si===+t.value));rdLayout();rdAudioSync();t.blur()}
   if(t.id==='rd-track'){AU.pause();rdTrack(+t.value);t.blur()}
   if(t.id==='rd-rate'){AU.defaultPlaybackRate=AU.playbackRate=+t.value;t.blur()}
@@ -1164,6 +1309,16 @@ document.addEventListener('change',e=>{
 });
 $('#score-file').addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';if(fs.length&&fileTarget)addScoreFiles(fileTarget,fs)});
 ['sc-cam','sc-lib'].forEach(k=>$('#'+k).addEventListener('change',e=>{const fs=[...e.target.files];e.target.value='';if(fs.length&&SC)scTake(fs)}));
+$('#xml-file').addEventListener('change',async e=>{
+  const f=e.target.files[0],id=fileTarget;e.target.value='';if(!f||!id)return;
+  let sc;try{sc=parseMusicXml(await musicXmlText(f))}catch(err){toast(err.message||'讀不出這個檔案');return}
+  try{
+    const ext=/\.mxl$/i.test(f.name)||new Uint8Array(await f.slice(0,2).arrayBuffer())[0]===0x50?'mxl':'musicxml';
+    const fid=await Files.add(f,ext),s=clone(S.songs[id]),old=s.xml&&s.xml.f;
+    pzStop();s.xml={f:fid,name:f.name,voice:sc.def};PZ.id=null;put('songs',id,s);if(old)Files.remove(old);
+    toast('讀到 '+sc.voices.length+' 個聲部、'+sc.measures.length+' 小節');
+  }catch(err){toast('沒存進去（'+(err.code||'錯誤')+'）')}
+});
 $('#audio-file').addEventListener('change',async e=>{
   const fs=[...e.target.files],id=fileTarget;e.target.value='';if(!fs.length||!id)return;
   toast('加入 '+fs.length+' 個音檔…');const add=[];
