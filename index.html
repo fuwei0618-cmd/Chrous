@@ -214,6 +214,8 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 .rd-ctl input[type=range]{flex:1;min-width:50px;accent-color:#E58FA9}
 #rd-time{font-size:12px;opacity:.8;white-space:nowrap}
 @media (max-width:480px){#rd-time{display:none}#reader .rd-ctl button,#reader .rd-ctl select{padding:4px 9px}}
+#reader .rd-show{display:none}
+#reader.bare .rd-show{display:block;position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:4;background:rgba(42,36,38,.7);font-size:13px;min-height:34px}
 #reader.bare .rd-top,#reader.bare .rd-tools,#reader.bare .rd-rail,#reader.bare .rd-edit,#reader.bare .rd-audio{display:none}
 body.full .osync{display:none!important} /* OneDrive badge would cover the reader's controls */
 /* scanner */
@@ -884,8 +886,8 @@ function openReader(list,opt,title){
     +(list.length>1?'<select id="rd-jump" aria-label="跳到哪一首">'+list.map((sid,i)=>'<option value="'+i+'">'+(i+1)+'. '+esc(S.songs[sid].title)+'</option>').join('')+'</select>':'<b>'+esc(title||S.songs[list[0]].title)+'</b>')
     +'<span id="rd-pg" class="num"></span></div><button data-act="rd-pen" id="rd-penbtn">✎ 筆記</button><button data-act="rd-audio" id="rd-audbtn">♪ 音檔</button></div>'
     +'<div class="rd-tools" id="rd-tools" hidden>'+[['pen','✒︎ 筆'],['hl','▮ 螢光筆'],['eraser','⌫ 橡皮擦'],['tx','T 文字']].map(([t,l])=>'<button data-act="rd-tool" data-t="'+t+'">'+l+'</button>').join('')
-    +'<span class="sep"></span><button data-act="rd-undo" aria-label="復原">↶</button><button data-act="rd-redo" aria-label="重做">↷</button><button data-act="rd-clear">清除</button><button data-act="rd-finger" id="rd-finger">手指也能畫</button></div>'
-    +'<div class="rd-main"><div class="rd-stage" id="rd-stage"></div><div class="rd-rail" id="rd-rail" hidden></div><div class="rd-edit" id="rd-edit" hidden></div></div>'
+    +'<button data-act="rd-size" id="rd-sizebtn">粗細・顏色</button><span class="sep"></span><button data-act="rd-undo" aria-label="復原">↶</button><button data-act="rd-redo" aria-label="重做">↷</button><button data-act="rd-clear">清除</button><button data-act="rd-finger" id="rd-finger">手指也能畫</button></div>'
+    +'<button class="rd-show" data-act="rd-show">顯示工具列</button><div class="rd-main"><div class="rd-stage" id="rd-stage"></div><div class="rd-rail" id="rd-rail" hidden></div><div class="rd-edit" id="rd-edit" hidden></div></div>'
     +'<div class="rd-audio" id="rd-audio" hidden><select id="rd-track" aria-label="選音檔"></select><div class="rd-ctl"><button data-act="rd-back" aria-label="倒退 5 秒">↺5</button><button data-act="rd-play" id="rd-play" aria-label="播放">▶</button><input type="range" id="rd-seek" min="0" max="1000" value="0" aria-label="播放進度"><span id="rd-time" class="num">0:00</span><select id="rd-rate" aria-label="播放速度"><option value="0.75">0.75×</option><option value="0.85">0.85×</option><option value="1" selected>1×</option><option value="1.1">1.1×</option></select><button data-act="rd-loop" id="rd-loop" aria-pressed="false">重複</button></div></div>';
   el.hidden=false;el.classList.remove('bare');document.body.style.overflow='hidden';document.body.classList.add('full');
   rdBind($('#rd-stage'));rdLayout();rdTools();rdAudioSync();keepAwake(true);
@@ -937,7 +939,7 @@ function rdBind(st){
     if(R.g)return; // a second finger while drawing or swiping is ignored
     if(e.pointerType==='pen'&&!R.sawPen){R.sawPen=true;if(R.finger){R.finger=false;rdPref();rdTools()}}
     const pg=e.target.closest('.rd-page'),sf=pg&&pg._sf;
-    const draw=R.pen&&sf&&(e.pointerType!=='touch'||R.finger);
+    const draw=R.pen&&sf&&!$('#reader').classList.contains('bare')&&(e.pointerType!=='touch'||R.finger); // with the toolbars hidden every tap turns pages, so the reader can never get stuck
     R.g={id:e.pointerId,x0:e.clientX,y0:e.clientY,t0:Date.now(),draw,sf};
     if(!draw)return;
     e.preventDefault();try{st.setPointerCapture(e.pointerId)}catch(_){}
@@ -958,7 +960,7 @@ function rdBind(st){
     if(e.type==='pointercancel')return;
     const dx=e.clientX-g.x0,dy=e.clientY-g.y0,r=st.getBoundingClientRect();
     if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.3){rdGo(dx<0?1:-1);return}
-    if(Math.hypot(dx,dy)<12&&Date.now()-g.t0<500){const fx=(e.clientX-r.left)/r.width;if(fx<.3)rdGo(-1);else if(fx>.7)rdGo(1);else{$('#reader').classList.toggle('bare');requestAnimationFrame(rdLayout)}}
+    if(Math.hypot(dx,dy)<12&&Date.now()-g.t0<500){const fx=(e.clientX-r.left)/r.width;if(fx<.3)rdGo(-1);else if(fx>.7)rdGo(1);else{const b=$('#reader').classList.toggle('bare');if(b)toast('工具列藏起來了，點右上角「顯示工具列」或畫面中間叫回來');requestAnimationFrame(rdLayout)}}
   };
   st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
 }
@@ -1292,6 +1294,8 @@ document.addEventListener('click',async e=>{
     case 'rd-pre-del':{const l=R.presets[R.tool];l.splice(R.sel[R.tool],1);R.sel[R.tool]=Math.max(0,R.sel[R.tool]-1);penPref();rdTools();$('#rd-edit').hidden=true;break}
     case 'rd-col':curPen()[0]=t.dataset.c;penPref();rdTools();rdEdit();break;
     case 'rd-edit-close':$('#rd-edit').hidden=true;break;
+    case 'rd-size':if($('#rd-edit').hidden)rdEdit();else $('#rd-edit').hidden=true;break;
+    case 'rd-show':$('#reader').classList.remove('bare');requestAnimationFrame(rdLayout);break;
     case 'rd-redo':{const sf=R.last&&R.surf.includes(R.last)?R.last:R.surf[0];if(sf)sf.redo();break}
     case 'rd-finger':R.finger=!R.finger;rdPref();rdTools();toast(R.finger?'手指也能畫（翻頁請點上面的歌名或關掉筆記）':'手指翻頁，Apple Pencil 寫字');break;
     case 'rd-undo':{const sf=R.last&&R.surf.includes(R.last)?R.last:R.surf[0];if(sf)sf.undo();break}
