@@ -807,7 +807,7 @@ function warpImg(img,k,filter,level,max){
     for(let t=0;t<255;t++){wb+=hist[t];if(!wb)continue;const wf=N-wb;if(!wf)break;sb+=t*hist[t];const mb=sb/wb,mf=(tot-sb)/wf,vv=wb*wf*(mb-mf)**2;if(vv>best){best=vv;T=t}}
     T=Math.max(120,Math.min(225,T));
     const L=Math.max(0,Math.min(100,level))/100,sh=(L-.5)*70; // slider: right = darker notes
-    const wp=Math.min(250,T+(255-T)*.3+sh*.6),bp=Math.max(0,Math.min(wp-30,T*.45+sh)),cut=Math.max(60,Math.min(245,T+sh));
+    const wp=Math.min(252,T+(255-T)*.55+sh*.6),bp=Math.max(0,Math.min(wp-30,T*.45+sh)),cut=Math.max(60,Math.min(245,T+sh));
     const ink=new Uint8Array(N);
     for(let i=0;i<N;i++){const r=lum[i],oi=i*4;
       if(filter==='bw'){const g=r<cut?0:255;o[oi]=o[oi+1]=o[oi+2]=g;ink[i]=g?0:1;continue}
@@ -815,16 +815,19 @@ function warpImg(img,k,filter,level,max){
       const st=t=>Math.max(0,Math.min(255,255*(t-bp)/(wp-bp)));
       if(filter==='gray'){const g=st(r);o[oi]=o[oi+1]=o[oi+2]=g}
       else{o[oi]=st(o[oi]);o[oi+1]=st(o[oi+1]);o[oi+2]=st(o[oi+2])} // colour: same stretch per channel keeps the hue
-      ink[i]=r<(T+wp)/2?1:0;
+      ink[i]=r<wp-4?1:0;
     }
-    // Remove specks: tiny isolated dots, and dark strips along the cut edge (table or paper edge left by a loose crop).
-    const minA=Math.max(3,Math.round((Math.max(W,H)/900)**2*4)),mx=Math.round(W*.04),my=Math.round(H*.04),lab=new Int32Array(N),stk=[];let id=0;
+    // Remove specks: tiny dots with no other ink nearby (dots inside characters and notes have neighbours, dust usually does not),
+    // and dark strips along the cut edge (table or paper edge left by a loose crop).
+    const sc=Math.max(W,H)/2200,minA=Math.max(3,Math.round(30*sc*sc)),near=Math.max(3,Math.round(14*sc)),mx=Math.round(W*.03),my=Math.round(H*.03),lab=new Int32Array(N),stk=[];let id=0;
     for(let s0=0;s0<N;s0++){if(!ink[s0]||lab[s0])continue;id++;lab[s0]=id;stk.push(s0);const mem=[];let x0=W,x1=0,y0=H,y1=0;
       while(stk.length){const p=stk.pop(),px=p%W,py=(p-px)/W;mem.push(p);if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py;
-        if(px>0&&ink[p-1]&&!lab[p-1]){lab[p-1]=id;stk.push(p-1)}if(px<W-1&&ink[p+1]&&!lab[p+1]){lab[p+1]=id;stk.push(p+1)}
-        if(py>0&&ink[p-W]&&!lab[p-W]){lab[p-W]=id;stk.push(p-W)}if(py<H-1&&ink[p+W]&&!lab[p+W]){lab[p+W]=id;stk.push(p+W)}}
+        for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const qx=px+dx,qy=py+dy;if(qx<0||qy<0||qx>=W||qy>=H)continue;const q=qy*W+qx;if(ink[q]&&!lab[q]){lab[q]=id;stk.push(q)}}}
       const edge=(x1<mx&&x0===0)||(x0>W-1-mx&&x1===W-1)||(y1<my&&y0===0)||(y0>H-1-my&&y1===H-1);
-      if(mem.length<minA||edge)for(const p of mem){const q=p*4;o[q]=o[q+1]=o[q+2]=255}
+      let drop=edge;
+      if(!drop&&mem.length<minA){drop=true;
+        for(let yy=Math.max(0,y0-near);drop&&yy<=Math.min(H-1,y1+near);yy++)for(let xx=Math.max(0,x0-near);xx<=Math.min(W-1,x1+near);xx++){const q=yy*W+xx;if(ink[q]&&lab[q]!==id){drop=false;break}}}
+      if(drop)for(const p of mem){const q=p*4;o[q]=o[q+1]=o[q+2]=255}
     }
   }
   ox.putImageData(od,0,0);
@@ -870,10 +873,11 @@ function renderScan(){
         +(i?'<button data-act="sc-move" data-i="'+i+'" data-d="-1" aria-label="往前">‹</button>':'')+'<button data-act="sc-edit" data-i="'+i+'">調整</button><button data-act="sc-del" data-i="'+i+'" aria-label="刪掉">✕</button>'+(i<n-1?'<button data-act="sc-move" data-i="'+i+'" data-d="1" aria-label="往後">›</button>':'')+'</div></div>').join('')
       +'</div></div><div class="sc-side">'+flt+'<button class="btn primary" data-act="sc-all">全部加入（'+n+' 頁）</button></div>';
   }else{
-    h='<header class="sc-top"><button class="ghost" data-act="sc-back">‹ 全部</button><h2>第 '+(SC.cur+1)+' / '+n+' 張</h2><button class="ghost" data-act="sc-back" style="font-weight:700">好了</button></header><div class="sc-body">'
+    h=(SC.redo?'<header class="sc-top"><button class="ghost" data-act="sc-close">取消</button><h2>重新調整第 '+(SC.redo.i+1)+' 頁</h2><button class="ghost" data-act="sc-redo-save" style="font-weight:700">存好</button></header><div class="sc-body">'
+      :'<header class="sc-top"><button class="ghost" data-act="sc-back">‹ 全部</button><h2>第 '+(SC.cur+1)+' / '+n+' 張</h2><button class="ghost" data-act="sc-back" style="font-weight:700">好了</button></header><div class="sc-body">')
       +'<div class="sc-stage"><canvas id="sc-cv"></canvas></div><div class="sc-side"><p class="small muted" style="margin:0">拖四個角對齊譜的邊緣，拖的時候上方會放大給你看；拖邊上中間的白點可以整條邊一起移。</p>'+flt
       +'<div class="sc-pv"><span class="label">加入後的樣子</span><canvas id="sc-pv"></canvas></div>'
-      +'<div class="btns">'+(SC.cur>0?'<button class="btn sm" data-act="sc-step" data-d="-1">‹ 上一張</button>':'')+(SC.cur<n-1?'<button class="btn sm" data-act="sc-step" data-d="1">下一張 ›</button>':'')+'<button class="btn sm" data-act="sc-auto">自動找邊</button><button class="btn sm" data-act="sc-full">用整張圖</button><button class="btn sm" data-act="sc-rot">↻ 轉方向</button><button class="btn sm" data-act="sc-skip">刪掉這張</button></div></div>';
+      +(SC.redo?'<p class="small muted" style="margin:0">這頁上的筆記會跟著縮放；如果框差很多，筆記位置可能要再調。</p><div class="btns"><button class="btn primary" data-act="sc-redo-save">存好</button>':'<div class="btns">')+(SC.redo?'':SC.cur>0?'<button class="btn sm" data-act="sc-step" data-d="-1">‹ 上一張</button>':'')+(SC.cur<n-1?'<button class="btn sm" data-act="sc-step" data-d="1">下一張 ›</button>':'')+'<button class="btn sm" data-act="sc-auto">自動找邊</button><button class="btn sm" data-act="sc-full">用整張圖</button><button class="btn sm" data-act="sc-rot">↻ 轉方向</button>'+(SC.redo?'':'<button class="btn sm" data-act="sc-skip">刪掉這張</button>')+'</div></div>';
   }
   el.innerHTML=h+'</div>';
   if(SC.cur>=0){setupCorners();scPreview()}else scThumbs();
@@ -894,10 +898,31 @@ async function scTake(files){
     if(SC.cur<0)renderScan();
   }
 }
+async function scPage(t){ // one finished page; the original photo is kept so the scan can be adjusted again later
+  const cv=warpImg(t.img,t.k,SC.filter,SC.level),f=await Files.add(await toJpeg(cv),'jpg');
+  if(!t.src||t.dirty)t.src=await Files.add(await toJpeg(t.img,.9),'jpg');
+  return{f,w:cv.width,h:cv.height,scan:{src:t.src,k:t.k.map(p=>p.map(v=>Math.round(v))),filter:SC.filter,level:SC.level}};
+}
 async function scAddAll(){
   if(!SC||!SC.shots.length||SC.busy)return;SC.busy=true;const all=SC.shots,n=all.length;let ok=0;
-  for(let i=0;i<n;i++){toast('加入中… '+(i+1)+' / '+n);try{await addPageCanvases(SC.id,[warpImg(all[i].img,all[i].k,SC.filter,SC.level)]);ok++}catch(e){toast('第 '+(i+1)+' 頁沒加進去（'+(e.code||'錯誤')+'）');break}}
+  for(let i=0;i<n;i++){toast('加入中… '+(i+1)+' / '+n);try{const pg=await scPage(all[i]);const s=clone(S.songs[SC.id]);s.pages=[...(s.pages||[]),pg];put('songs',SC.id,s);ok++}catch(e){toast('第 '+(i+1)+' 頁沒加進去（'+(e.code||'錯誤')+'）');break}}
   if(ok===n){toast('已加入 '+n+' 頁');closeScanner()}else{SC.shots=all.slice(ok);SC.busy=false;renderScan()}
+}
+async function rescanPage(song,i){ // reopen an added page in the scanner with its photo, corners and cleanup
+  const p=S.songs[song].pages[i],sc=p.scan,b=await Files.blob(sc.src);if(!b){toast('讀不到原本的照片');return}
+  let img=await fileToCanvas(b,2400),k=sc.k.map(q=>[...q]);
+  for(let r=0;r<(sc.rot||0);r++){const h=img.height;img=rotateCanvas(img);k=[3,0,1,2].map(j=>k[j]).map(([x,y])=>[h-y,x])}
+  openScanner(song);Object.assign(SC,{filter:sc.filter,level:sc.level,cur:0,redo:{i,f:p.f}});SC.shots=[{img,k,src:sc.src,dirty:!!sc.rot}];renderScan();
+}
+async function scRedoSave(){
+  if(!SC||SC.busy)return;SC.busy=true;toast('存檔中…');const {i,f:old}=SC.redo,id=SC.id;
+  try{
+    const pg=await scPage(SC.shots[0]),s=clone(S.songs[id]),j=s.pages.findIndex(p=>p.f===old),at=j<0?i:j,prev=s.pages[at];
+    const ink=S.ink[inkKey(old)];
+    if(ink){const fx=pg.w/(prev.w||pg.w),fy=pg.h/(prev.h||pg.h);put('ink',inkKey(pg.f),{s:ink.s.map(st=>({...st,p:st.p.map((v,n)=>v*(n%2?fy:fx))})),ts:Date.now()});del('ink',inkKey(old))}
+    if(prev.scan&&prev.scan.src!==pg.scan.src)Files.remove(prev.scan.src);
+    s.pages[at]=pg;put('songs',id,s);Files.remove(old);toast('已更新第 '+(at+1)+' 頁');closeScanner();
+  }catch(e){SC.busy=false;toast('沒存成功（'+(e.code||'錯誤')+'）')}
 }
 let scPvT=null;
 function scPreview(){clearTimeout(scPvT);scPvT=setTimeout(()=>{const pv=$('#sc-pv');if(!pv||!SC||!SC.img)return;const out=warpImg(SC.img,SC.k,SC.filter,SC.level,520);pv.width=out.width;pv.height=out.height;pv.getContext('2d').drawImage(out,0,0)},60)}
@@ -942,7 +967,7 @@ async function rotatePage(id,i){
   const s=clone(S.songs[id]),p=s.pages[i],b=await Files.blob(p.f);if(!b){toast('讀不到這頁');return}
   const cv=rotateCanvas(await fileToCanvas(b,4000)),f=await Files.add(await toJpeg(cv),'jpg'),ok=inkKey(p.f),ink=S.ink[ok];
   if(ink){put('ink',inkKey(f),{s:ink.s.map(st=>{const q=[];for(let j=0;j<st.p.length;j+=2)q.push(cv.width-st.p[j+1],st.p[j]);return{...st,p:q}}),ts:Date.now()});del('ink',ok)}
-  s.pages[i]={f,w:cv.width,h:cv.height};put('songs',id,s);Files.remove(p.f);
+  s.pages[i]={f,w:cv.width,h:cv.height,...(p.scan?{scan:{...p.scan,rot:((p.scan.rot||0)+1)%4}}:{})};put('songs',id,s);Files.remove(p.f);
 }
 
 /* ---------- 看譜：翻頁、畫筆、練唱音檔 ---------- */
@@ -1398,10 +1423,10 @@ document.addEventListener('click',async e=>{
     case 'add-xml':fileTarget=id;$('#xml-file').click();break;
     case 'del-xml':{if(!confirm('移除這個 MusicXML？'))return;pzStop();const s=clone(S.songs[id]),f=s.xml.f;delete s.xml;PZ.id=null;put('songs',id,s);Files.remove(f);break}
     case 'pz-play':if(PZ.playing)pzStop(true);else pzPlay();break;
-    case 'page-menu':{const i=+t.dataset.i,n=(S.songs[id].pages||[]).length;sheet('第 '+(i+1)+' 頁','<div class="btns"><button class="btn" data-act="page-move" data-d="-1"'+(i?'':' disabled')+'>往前移</button><button class="btn" data-act="page-move" data-d="1"'+(i<n-1?'':' disabled')+'>往後移</button><button class="btn" data-act="page-rot">↻ 向右轉</button><button class="btn warn" data-act="page-del">刪除這頁</button></div>',null,{song:id,i});break}
+    case 'page-menu':{const i=+t.dataset.i,n=(S.songs[id].pages||[]).length;sheet('第 '+(i+1)+' 頁','<div class="btns"><button class="btn" data-act="page-move" data-d="-1"'+(i?'':' disabled')+'>往前移</button><button class="btn" data-act="page-move" data-d="1"'+(i<n-1?'':' disabled')+'>往後移</button>'+((S.songs[id].pages[i]||{}).scan?'<button class="btn" data-act="page-rescan">重新調整掃描</button>':'')+'<button class="btn" data-act="page-rot">↻ 向右轉</button><button class="btn warn" data-act="page-del">刪除這頁</button></div>',null,{song:id,i});break}
     case 'page-move':{const {song,i}=sheetExtra,j=i+(+t.dataset.d),s=clone(S.songs[song]);if(j<0||j>=s.pages.length)return;[s.pages[i],s.pages[j]]=[s.pages[j],s.pages[i]];put('songs',song,s);closeSheet();break}
     case 'page-rot':{const {song,i}=sheetExtra;closeSheet();toast('轉方向中…');try{await rotatePage(song,i)}catch(_){toast('轉不了，稍後再試')}break}
-    case 'page-del':{const {song,i}=sheetExtra;if(!confirm('刪除這頁譜？上面的筆記也會一起刪除。'))return;const s=clone(S.songs[song]),[p]=s.pages.splice(i,1);put('songs',song,s);if(S.ink[inkKey(p.f)])del('ink',inkKey(p.f));Files.remove(p.f);closeSheet();break}
+    case 'page-del':{const {song,i}=sheetExtra;if(!confirm('刪除這頁譜？上面的筆記也會一起刪除。'))return;const s=clone(S.songs[song]),[p]=s.pages.splice(i,1);put('songs',song,s);if(S.ink[inkKey(p.f)])del('ink',inkKey(p.f));Files.remove(p.f);if(p.scan)Files.remove(p.scan.src);closeSheet();break}
     case 'track-menu':{const i=+t.dataset.i,tr=S.songs[id].tracks[i];sheet('練唱音檔',fld('tname','名稱（例：女高聲部、老師示範）',tr.name)+'<button class="btn sm warn" data-act="track-del">刪除這個音檔</button>',()=>{const s=clone(S.songs[id]);s.tracks[i].name=val('tname')||s.tracks[i].name;put('songs',id,s)},{song:id,i});break}
     case 'track-del':{const {song,i}=sheetExtra;if(!confirm('刪除這個音檔？'))return;const s=clone(S.songs[song]),[x]=s.tracks.splice(i,1);put('songs',song,s);Files.remove(x.f);closeSheet();break}
     case 'sl-start':openReader(setlistOf(S.shows[id]),{song:0},S.shows[id].title);break;
@@ -1431,7 +1456,9 @@ document.addEventListener('click',async e=>{
     case 'rd-loop':{const on=t.getAttribute('aria-pressed')!=='true';t.setAttribute('aria-pressed',on);AU.loop=on;break}
     case 'sc-cam':$('#sc-cam').click();break;
     case 'sc-lib':$('#sc-lib').click();break;
-    case 'sc-close':if(SC&&SC.shots.length&&!confirm('拍好的 '+SC.shots.length+' 張還沒加入，確定關閉？'))return;closeScanner();break;
+    case 'sc-redo-save':scRedoSave();break;
+    case 'page-rescan':{const {song,i}=sheetExtra;closeSheet();rescanPage(song,i);break}
+    case 'sc-close':if(SC&&SC.shots.length&&!SC.redo&&!confirm('拍好的 '+SC.shots.length+' 張還沒加入，確定關閉？'))return;closeScanner();break;
     case 'sc-all':scAddAll();break;
     case 'sc-edit':SC.cur=+t.dataset.i;renderScan();break;
     case 'sc-back':SC.cur=-1;renderScan();break;
@@ -1441,7 +1468,7 @@ document.addEventListener('click',async e=>{
     case 'sc-auto':{const k=findPaper(SC.img);if(k){SC.k=k;renderScan()}else toast('找不到明顯的紙張邊緣，請手動拖四個角');break}
     case 'sc-skip':SC.shots.splice(SC.cur,1);if(SC.cur>=SC.shots.length)SC.cur=SC.shots.length-1;renderScan();break;
     case 'sc-full':{const w=SC.img.width,h=SC.img.height;SC.k=[[0,0],[w,0],[w,h],[0,h]];renderScan();break}
-    case 'sc-rot':{const h=SC.img.height;SC.img=rotateCanvas(SC.img);SC.k=[3,0,1,2].map(i=>SC.k[i]).map(([x,y])=>[h-y,x]);renderScan();break}
+    case 'sc-rot':{SC.shots[SC.cur].dirty=true;const h=SC.img.height;SC.img=rotateCanvas(SC.img);SC.k=[3,0,1,2].map(i=>SC.k[i]).map(([x,y])=>[h-y,x]);renderScan();break}
     case 'sc-flt':SC.filter=t.dataset.k;renderScan();break;
     case 'edit-reh':editReh(id);break;
     case 'del-reh':if(confirm('刪除這筆團練紀錄？')){del('rehearsals',id);closeSheet()}break;
