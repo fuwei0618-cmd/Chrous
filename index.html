@@ -1403,11 +1403,16 @@ async function lpAct(a,t){
     case 'lp-edit-save':{const txt=$('#lp-text').value.trim();if(!txt){toast('還沒有歌詞');return}
       const n=clone(s),old=s.lyr||{};n.lyr={...old,text:txt,t:mapTimes(old.text,old.t,txt)};put('songs',LP.id,n);LP.mode='play';lpRender();
       if(!n.lyr.t.some(x=>x!=null))toast('歌詞存好了。下一步按右上「對拍」，跟著音檔一句一句點');break}
-    case 'lp-tapmenu':{LP.au.pause();const T=lpTimes(),any=T.some(x=>x!=null),si=LP.cur>=0?LP.P.lines[LP.cur].sec:0;
-      if(!any){lpTapStart(0);break}
-      const ch=prompt('對拍要怎麼做？輸入數字：\n1 整首重對（從頭）\n2 從「'+LP.P.secs[si].name+'」開始改（前面不動）'+(s.lyr.prevT?'\n3 復原成上一次的對拍':''),'2');
-      if(ch==='1')lpTapStart(0);else if(ch==='2')lpTapStart(si);else if(ch==='3'&&s.lyr.prevT){const n=clone(s);[n.lyr.t,n.lyr.prevT]=[n.lyr.prevT,n.lyr.t];put('songs',LP.id,n);lpRender();toast('換回上一次的對拍')}
+    case 'lp-tapmenu':{LP.au.pause();const T=lpTimes(),si=LP.cur>=0?LP.P.lines[LP.cur].sec:0;
+      if(!T.some(x=>x!=null)){lpTapStart(0);break}
+      const m=$('#lp-menu');if(m){m.remove();break}
+      const bot=$('#lyr .lp-bot');bot.insertAdjacentHTML('afterbegin','<div class="lp-ctl" id="lp-menu"><span class="small">對拍：</span><button data-act="lp-tapgo" data-i="0">整首重對</button>'
+        +(si>0?'<button data-act="lp-tapgo" data-i="'+si+'">從「'+esc(LP.P.secs[si].name)+'」改</button>':'')
+        +'<select id="lp-tapsec" aria-label="從哪一段開始改"><option value="">從其他段改…</option>'+LP.P.secs.map((q,i)=>'<option value="'+i+'">'+esc(q.name)+'</option>').join('')+'</select>'
+        +(s.lyr.prevT?'<button data-act="lp-tapundo">↶ 復原上一次</button>':'')+'<button data-act="lp-tapmenu">取消</button></div>');
       break}
+    case 'lp-tapgo':lpTapStart(+t.dataset.i);break;
+    case 'lp-tapundo':{const n=clone(s);[n.lyr.t,n.lyr.prevT]=[n.lyr.prevT,n.lyr.t];put('songs',LP.id,n);lpRender();toast('換回上一次的對拍');break}
     case 'lp-tap':lpTap();break;
     case 'lp-tapback':lpTapBack();break;
     case 'lp-tapdone':lpTapDone();break;
@@ -1715,7 +1720,7 @@ document.addEventListener('input',e=>{
   if(e.target.id==='sc-lv'){SC.level=+e.target.value;SC.cur>=0?scPreview():(clearTimeout(scPvT),scPvT=setTimeout(scThumbs,150))}
   if(e.target.id==='rd-seek'){R.seeking=true;if(R.piano&&PZ.score){const N=PZ.score.measures.length;$('#rd-time').textContent='第 '+(1+Math.round(e.target.value/1000*(N-1)))+' / '+N+' 小節'}else if(AU.duration)$('#rd-time').textContent=fmtT(e.target.value/1000*AU.duration)+' / '+fmtT(AU.duration)}
 });
-document.addEventListener('change',e=>{if(LP.on&&e.target.id==='lp-track'){LP.au.pause();LP.f=e.target.value;LP.cur=-2;lpLoad().then(()=>lpRender())}});
+document.addEventListener('change',e=>{if(LP.on&&e.target.id==='lp-tapsec'&&e.target.value!==''){lpTapStart(+e.target.value);return}if(LP.on&&e.target.id==='lp-track'){LP.au.pause();LP.f=e.target.value;LP.cur=-2;lpLoad().then(()=>lpRender())}});
 document.addEventListener('input',e=>{if(LP.on&&e.target.id==='lp-seek'&&LP.au.duration>0){LP.seeking=true;LP.au.currentTime=e.target.value/1000*LP.au.duration;LP.cur=-2;lpTick();LP.seeking=false}});
 document.addEventListener('pointerdown',e=>{if(LP.on&&LP.mode==='tap'&&e.target.closest('#lp-body')&&!e.target.closest('.lp-l')){e.preventDefault();lpTap()}});
 addEventListener('resize',()=>{if(LP.on&&LP.mode!=='edit'){LP.cur=-2;lpFit();lpTick()}});
