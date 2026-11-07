@@ -173,6 +173,42 @@ legend{font-family:var(--display);font-weight:700;padding:0 6px}
 .sl .sl-open{background:none;border:0;text-align:left;padding:0;min-height:40px}
 .sl .ghost{min-width:34px;padding:8px 6px}
 /* reader: full-screen score with ink and practice audio; always dark around the white page */
+/* lyric practice player: sections, tap-along timing, current line lit */
+body.full #toast{z-index:80;bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+#lyr{position:fixed;inset:0;z-index:47;background:#211B1D;color:#F4EFE7;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
+#lyr button,#lyr select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#F4EFE7;border-radius:999px;min-height:38px;padding:4px 12px;font-size:14px;white-space:nowrap}
+#lyr button[aria-pressed="true"]{background:#F4EFE7;color:#2A1E22;border-color:#F4EFE7}
+#lyr select option{color:#2A1E22;background:#fff}
+.lp-top{display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 6px;flex-wrap:wrap}
+.lp-top b{font-family:var(--display);font-size:18px;flex:1;min-width:6em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lp-top select{max-width:40vw;overflow:hidden;text-overflow:ellipsis}
+.lp-chain{display:flex;gap:6px;padding:4px 10px 8px;overflow-x:auto;scrollbar-width:none}
+#lyr .lp-chain button{border-radius:10px;min-height:34px;font-size:13px;flex:1 0 auto;max-width:12em;overflow:hidden;text-overflow:ellipsis}
+#lyr .lp-chain button.cur{background:rgba(232,184,106,.22);border-color:#E8B86A;color:#FFD58A}
+.lp-body{flex:1;min-height:0;overflow:auto;padding:4px 14px 14px;font-size:19px}
+.lp-body.wide{overflow:hidden;column-gap:14px}
+.lp-blk{break-inside:avoid;background:rgba(255,255,255,.06);border:1px solid transparent;border-radius:12px;padding:8px 12px;margin:0 0 10px}
+.lp-blk.cur{border-color:rgba(232,184,106,.7)}
+.lp-h{color:#E8B86A;font-size:.72em;margin-bottom:2px}
+.lp-l{line-height:1.55;padding:1px 0;cursor:pointer;transition:opacity .2s}
+.lp-l.past{opacity:.45}.lp-l.on{color:#FFD58A;font-weight:600}
+.lp-l.nt::after{content:' ·';color:#c77}
+.lp-bot{padding:6px 12px calc(10px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;background:rgba(0,0,0,.25)}
+.lp-prog{position:relative;height:26px}
+.lp-prog input{position:absolute;inset:0;width:100%;margin:0;accent-color:#E8B86A}
+.lp-tick{position:absolute;top:2px;width:2px;height:8px;background:#E8B86A;pointer-events:none;opacity:.8}
+.lp-ctl{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+#lyr .lp-play{width:58px;height:58px;border-radius:50%;font-size:24px;background:#F4EFE7;color:#2A1E22}
+.lp-time{font-size:12px;opacity:.75;min-width:7em;text-align:center}
+.lp-seg{display:inline-flex;border:1px solid rgba(255,255,255,.22);border-radius:999px;overflow:hidden}
+#lyr .lp-seg button{border:0;border-radius:0;background:transparent}
+#lyr .lp-seg button[aria-pressed="true"]{background:#F4EFE7;color:#2A1E22}
+#lyr.tapping .lp-bot{background:#7a2433}
+.lp-tapmsg{text-align:center;font-size:15px}
+#lyr .lp-big{min-height:56px;font-size:17px;padding:4px 26px;background:#F4EFE7;color:#7a2433;font-weight:700}
+.lp-ed{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:6px 14px calc(14px + env(safe-area-inset-bottom,0px))}
+.lp-ed textarea{flex:1;min-height:200px;width:100%;border-radius:12px;padding:12px;font-size:17px;line-height:1.6;background:#fff;color:#222;border:0;-webkit-user-select:text;user-select:text}
+.lp-ed p{margin:0;font-size:13px;opacity:.8}
 #reader{position:fixed;inset:0;z-index:45;background:#2A2426;color:#F4EFE7;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
 #reader button,#reader select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#F4EFE7;border-radius:999px;min-height:38px;padding:4px 12px;font-size:14px;white-space:nowrap}
 #reader button[aria-pressed="true"]{background:#F4EFE7;color:#2A1E22;border-color:#F4EFE7}
@@ -253,6 +289,7 @@ body.full .osync{display:none!important} /* OneDrive badge would cover the reade
 <div id="viewer" hidden></div>
 <div id="reader" hidden></div>
 <div id="scan" hidden></div>
+<div id="lyr" hidden></div>
 <div id="toast" hidden role="status"></div>
 <input type="file" id="file" accept="image/*" multiple hidden>
 <input type="file" id="import" accept="application/json,.json" hidden>
@@ -1225,12 +1262,163 @@ function vSong(id){
   h+='</section><section class="sec"><div class="sec-head"><h2>練唱音檔</h2><button class="ghost" data-act="add-audio" data-id="'+id+'">＋ 加入</button></div>';
   h+=tracks.length?'<ul class="list">'+tracks.map((t,i)=>'<li class="trk"><div class="sec-head"><span class="title">'+esc(t.name||'音檔')+'</span><button class="ghost" data-act="track-menu" data-id="'+id+'" data-i="'+i+'" aria-label="音檔選項">⋯</button></div><audio controls preload="metadata" data-f="'+esc(t.f)+'"'+(Files.urls[t.f]?' src="'+Files.urls[t.f]+'"':'')+'></audio></li>').join('')+'</ul>'
     :'<div class="empty small">例如各聲部的練唱音檔、老師的示範錄音。看譜時也能在下方播放。</div>';
+  {const L=s.lyr&&s.lyr.text?parseLyr(s.lyr.text):null,nt=L?(s.lyr.t||[]).filter(x=>x!=null).length:0;
+  h+='</section><section class="sec"><div class="sec-head"><h2>歌詞練唱</h2>'+(L?'<div class="btns"><button class="btn sm" data-act="lyr-edit" data-id="'+id+'">改歌詞</button><button class="btn sm primary" data-act="lyr-open" data-id="'+id+'">▶ 開始練唱</button></div>':'<button class="ghost" data-act="lyr-edit" data-id="'+id+'">＋ 貼歌詞</button>')+'</div>';
+  h+=L?'<p class="small muted" style="margin:0">'+L.secs.length+' 段、'+L.lines.length+' 句'+(nt?'，已對拍 '+nt+' 句':'，還沒對拍')+(tracks.length?'':'。還需要先在上面加入音檔')+'</p>'
+    :'<div class="empty small">貼上歌詞並分段，配上同學給的音檔，自己跟著點一次「對拍」。之後播放時唱到哪句就亮哪句，點任何一句就從那裡播，也能重複一段或靜音自己唱。</div>';}
   h+='</section><section class="sec"><div class="sec-head"><h2>鋼琴彈旋律</h2><button class="ghost" data-act="add-xml" data-id="'+id+'">'+(s.xml?'換檔案':'＋ 匯入 MusicXML')+'</button></div>';
   h+=s.xml?'<div class="panel pz" id="pz" data-id="'+id+'"></div><div class="sec-head"><span class="small muted">'+esc(s.xml.name||'')+'</span><button class="ghost small" data-act="del-xml" data-id="'+id+'">移除</button></div>'
     :'<div class="empty small">先用 PlayScore 2 或 MuseScore 把譜轉成 MusicXML（.musicxml 或 .mxl），匯入後就能用鋼琴彈出女高的旋律，也能放慢、從某一小節開始。</div>';
   h+='</section>';
   if(shows.length)h+='<section class="sec"><h2>演出歌單裡有這首</h2><ul class="list">'+shows.map(showRow).join('')+'</ul></section>';
   return h;
+}
+/* ---------- 歌詞練唱：分段歌詞＋同學的音檔，自己對拍，播放時當句會亮 ---------- */
+// song.lyr = {text, t:[start second per lyric line, null = not tapped], f: the track file the timing belongs to, prevT: last timing before a re-tap}
+const LP={on:false};
+function parseLyr(text){
+  const blocks=[];let cur=null;
+  for(const raw of String(text||'').replace(/\r/g,'').split('\n')){
+    const l=raw.trim();if(!l){cur=null;continue}
+    const m=l.match(/^(?:[【\[]\s*(.+?)\s*[】\]]|#\s*(.+))$/),head=m&&(m[1]||m[2]);
+    if(head){cur={name:head,txt:[]};blocks.push(cur);continue}
+    if(!cur){cur={name:'',txt:[]};blocks.push(cur)}
+    cur.txt.push(l);
+  }
+  const secs=[],lines=[];
+  blocks.filter(q=>q.txt.length).forEach((q,i)=>{secs.push({name:q.name||'第 '+(i+1)+' 段',lines:q.txt.map(x=>{lines.push({txt:x,sec:i});return lines.length-1})})});
+  return{secs,lines};
+}
+function mapTimes(oldText,oldT,newText){ // keep a line's timing when the lyrics are edited: same text, same occurrence
+  const a=parseLyr(oldText).lines,b=parseLyr(newText).lines,seen={},pool={};
+  a.forEach((l,i)=>{const n=(seen[l.txt]=(seen[l.txt]||0)+1);pool[l.txt+'#'+n]=oldT&&oldT[i]!=null?oldT[i]:null});
+  const s2={};return b.map(l=>{const n=(s2[l.txt]=(s2[l.txt]||0)+1);return pool[l.txt+'#'+n]??null});
+}
+const lpFmt=x=>{x=Math.max(0,x||0);return Math.floor(x/60)+':'+String(Math.floor(x%60)).padStart(2,'0')};
+function openLyr(id,edit){
+  const s=S.songs[id];
+  Object.assign(LP,{on:true,id,mode:edit||!(s.lyr&&s.lyr.text)?'edit':'play',cur:-1,mute:false,loop:false,rate:1,tapFrom:0});
+  if(!LP.au){LP.au=new Audio();LP.au.preload='auto';['timeupdate','play','pause','loadedmetadata','ended'].forEach(ev=>LP.au.addEventListener(ev,lpTick))}
+  document.body.classList.add('full');$('#lyr').hidden=false;
+  const tr=s.tracks||[],pref=s.lyr&&s.lyr.f;LP.f=(tr.find(t=>t.f===pref)||tr[0]||{}).f||null;
+  lpRender();lpLoad();
+}
+function closeLyr(){if(LP.mode==='tap')lpTapDone();LP.on=false;if(LP.au){LP.au.pause();LP.au.removeAttribute('src');LP.au.load()}$('#lyr').hidden=true;$('#lyr').innerHTML='';document.body.classList.remove('full');render()}
+async function lpLoad(){
+  if(!LP.f){LP.au.removeAttribute('src');return}
+  const f=LP.f,u=await Files.url(f);if(!LP.on||LP.f!==f)return;
+  if(!u){toast('讀不到這個音檔');return}
+  if(LP.au.src!==u){LP.au.src=u;LP.au.preservesPitch=true;LP.au.webkitPreservesPitch=true}
+}
+const lpSong=()=>S.songs[LP.id];
+const lpTimes=()=>{const l=lpSong().lyr||{};return l.t||[]};
+function lpRender(){
+  const s=lpSong(),el=$('#lyr'),tr=s.tracks||[];el.classList.toggle('tapping',LP.mode==='tap');
+  const top='<header class="lp-top"><button data-act="lp-close">‹ 關閉</button><b>'+esc(s.title)+'</b>'
+    +(LP.mode==='edit'?'':(tr.length?'<select id="lp-track" aria-label="音檔">'+tr.map(t=>'<option value="'+esc(t.f)+'"'+(t.f===LP.f?' selected':'')+'>'+esc(t.name||'音檔')+'</option>').join('')+'</select>':'')
+      +'<button data-act="lp-edit">改歌詞</button>'+(LP.mode==='play'?'<button data-act="lp-tapmenu">對拍</button>':''))+'</header>';
+  if(LP.mode==='edit'){
+    el.innerHTML=top+'<div class="lp-ed"><p>貼上歌詞。空一行＝新的一段；段落第一行可以寫【主歌】或【A】當段名，不寫就叫第 1 段、第 2 段。</p><textarea id="lp-text" placeholder="例如：\n【A】\n第一句\n第二句\n\n【B】\n…">'+esc((s.lyr&&s.lyr.text)||'')+'</textarea><div class="btns"><button data-act="lp-autosplit">沒空行？每 4 句自動分一段</button><span style="flex:1"></span>'+(s.lyr&&s.lyr.text?'<button data-act="lp-edit-cancel">取消</button>':'')+'<button data-act="lp-edit-save" aria-pressed="true">存好</button></div></div>';
+    return;
+  }
+  const P=parseLyr(s.lyr.text),T=lpTimes();LP.P=P;
+  const chain='<nav class="lp-chain">'+P.secs.map((q,i)=>'<button data-act="lp-sec" data-i="'+i+'">'+esc(q.name)+'</button>').join('')+'</nav>';
+  const body='<div class="lp-body" id="lp-body">'+P.secs.map((q,i)=>'<div class="lp-blk" data-s="'+i+'"><div class="lp-h">'+esc(q.name)+'</div>'+q.lines.map(j=>'<div class="lp-l'+(T[j]==null?' nt':'')+'" data-act="lp-line" data-j="'+j+'">'+esc(P.lines[j].txt)+'</div>').join('')+'</div>').join('')+'</div>';
+  const bot=LP.mode==='tap'
+    ?'<div class="lp-bot"><div class="lp-tapmsg" id="lp-tapmsg"></div><div class="lp-ctl"><button data-act="lp-tapback">↶ 退一句</button><button class="lp-big" data-act="lp-tap">這句開始</button><button data-act="lp-tapdone">完成</button></div><div class="lp-time" id="lp-time" style="margin:0 auto"></div></div>'
+    :'<div class="lp-bot"><div class="lp-prog"><input type="range" id="lp-seek" min="0" max="1000" value="0" aria-label="進度"><div id="lp-ticks"></div></div>'
+     +'<div class="lp-ctl"><span class="lp-seg"><button data-act="lp-mute" data-m="0" aria-pressed="'+!LP.mute+'">原曲</button><button data-act="lp-mute" data-m="1" aria-pressed="'+LP.mute+'">靜音</button></span>'
+     +'<button data-act="lp-loop" aria-pressed="'+LP.loop+'" title="重複這一段">🔁 這段</button><button data-act="lp-skip" data-d="-5">↺5</button><button class="lp-play" id="lp-play" data-act="lp-play">▶</button><button data-act="lp-skip" data-d="5">5↻</button>'
+     +'<button data-act="lp-rate">速度 '+LP.rate+'×</button><span class="lp-time" id="lp-time"></span></div></div>';
+  el.innerHTML=top+chain+body+bot;
+  if(!s.tracks||!s.tracks.length)toast('這首還沒有音檔。先回曲目頁「練唱音檔」加入同學給的音檔');
+  else if(s.lyr.f&&s.lyr.f!==LP.f&&T.some(x=>x!=null))toast('對拍是用另一個音檔對的，時間可能不準');
+  LP.cur=-1;lpFit();lpTick();
+}
+function lpFit(){ // wide screens: the whole song on one screen in columns, font shrinks until it fits
+  const b=$('#lp-body');if(!b)return;
+  const wide=innerWidth>=700&&LP.mode!=='tap';b.classList.toggle('wide',wide);
+  if(!wide){b.style.columnCount='';b.style.fontSize='';return}
+  b.style.columnCount=Math.max(1,Math.min(4,Math.floor(b.clientWidth/300),LP.P.secs.length));
+  let fs=24;b.style.fontSize=fs+'px';
+  while(fs>11&&(b.scrollWidth>b.clientWidth+2||b.scrollHeight>b.clientHeight+2)){fs-=1;b.style.fontSize=fs+'px'}
+}
+function lpTicks(){
+  const box=$('#lp-ticks'),d=LP.au.duration;if(!box||!(d>0))return;const T=lpTimes();
+  box.innerHTML=LP.P.secs.map(q=>T[q.lines[0]]).filter(x=>x!=null).map(x=>'<span class="lp-tick" style="left:'+(x/d*100)+'%"></span>').join('');
+}
+function lpLineAt(t){const T=lpTimes();let c=-1;for(let j=0;j<T.length;j++)if(T[j]!=null&&T[j]<=t+.12&&(c<0||T[j]>=T[c]))c=j;return c}
+function lpSecRange(si){ // [start,end) seconds of a section, end = next timed section start or song end
+  const T=lpTimes(),P=LP.P,st=P.secs[si].lines.map(j=>T[j]).find(x=>x!=null);let en=LP.au.duration||1e9;
+  for(let k=si+1;k<P.secs.length;k++){const x=P.secs[k].lines.map(j=>T[j]).find(v=>v!=null);if(x!=null){en=x;break}}
+  return[st,en];
+}
+function lpTick(){
+  if(!LP.on||!LP.P||!LP.au)return;const a=LP.au,t=a.currentTime||0;
+  const tm=$('#lp-time');if(tm)tm.textContent=lpFmt(t)+' / '+lpFmt(a.duration);
+  if(LP.mode==='tap'){lpTapMsg();return}
+  const pl=$('#lp-play');if(pl)pl.textContent=a.paused?'▶':'❚❚';
+  const sk=$('#lp-seek');if(sk&&!LP.seeking&&a.duration>0)sk.value=Math.round(t/a.duration*1000);
+  if(!$('#lp-ticks').childNodes.length)lpTicks();
+  let c=lpLineAt(t);
+  if(LP.loop&&LP.loopSec!=null&&!a.paused){const[st,en]=lpSecRange(LP.loopSec);if(st!=null&&(t>=en-.05||a.ended)){a.currentTime=st;if(a.ended)a.play();c=lpLineAt(st)}}
+  if(c===LP.cur)return;LP.cur=c;
+  const T=lpTimes(),ct=c>=0?T[c]:-1,si=c>=0?LP.P.lines[c].sec:-1;
+  document.querySelectorAll('#lyr .lp-l').forEach(n=>{const j=+n.dataset.j;n.classList.toggle('on',j===c);n.classList.toggle('past',c>=0&&j!==c&&T[j]!=null&&T[j]<ct)});
+  document.querySelectorAll('#lyr .lp-blk').forEach(n=>n.classList.toggle('cur',+n.dataset.s===si));
+  document.querySelectorAll('#lyr .lp-chain button').forEach(n=>n.classList.toggle('cur',+n.dataset.i===si));
+  const on=$('#lyr .lp-l.on'),b=$('#lp-body');
+  if(on&&b&&!b.classList.contains('wide')){const r=on.getBoundingClientRect(),br=b.getBoundingClientRect();if(r.top<br.top+40||r.bottom>br.bottom-60)b.scrollTo({top:b.scrollTop+r.top-br.top-br.height*.3,behavior:'smooth'})}
+  const ch=$('#lyr .lp-chain button.cur');if(ch)ch.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function lpSeek(t,play){const a=LP.au;if(!a.src){toast('先選一個音檔');return}a.currentTime=Math.max(0,t);LP.cur=-2;lpTick();if(play)a.play().catch(()=>{})}
+/* 對拍: each tap marks the start of the next line; ← goes back one line. */
+function lpTapStart(fromSec){
+  const s=clone(lpSong()),T=lpTimes();if(!LP.f){toast('先加入音檔才能對拍');return}
+  s.lyr.prevT=T.slice();s.lyr.f=LP.f;put('songs',LP.id,s);
+  const P=LP.P,j0=fromSec?P.secs[fromSec].lines[0]:0;
+  let back=0;for(let j=j0-1;j>=0;j--)if(T[j]!=null){back=T[j];break}
+  LP.mode='tap';LP.tapFrom=j0;LP.ti=j0;LP.newT=T.slice();while(LP.newT.length<P.lines.length)LP.newT.push(null);
+  lpRender();lpSeek(fromSec?Math.max(0,(T[j0]!=null?T[j0]:back)-4):0,true);
+}
+function lpTapMsg(){
+  const m=$('#lp-tapmsg');if(!m)return;const P=LP.P,j=LP.ti;
+  m.innerHTML=j<P.lines.length?'聽到這句開口時點「這句開始」（或點畫面、按翻頁踏板）<br><b>'+esc(P.lines[j].txt)+'</b>　<span style="opacity:.7">'+esc(P.secs[P.lines[j].sec].name)+' · '+(j+1)+' / '+P.lines.length+'</span>':'全部對完了，按「完成」';
+  document.querySelectorAll('#lyr .lp-l').forEach(n=>{const k=+n.dataset.j;n.classList.toggle('on',k===j);n.classList.toggle('past',k<j);n.classList.toggle('nt',LP.newT[k]==null&&k>=j)});
+  const on=$('#lyr .lp-l.on'),b=$('#lp-body');if(on&&b){const r=on.getBoundingClientRect(),br=b.getBoundingClientRect();if(r.top<br.top+30||r.bottom>br.bottom-30)b.scrollTo({top:b.scrollTop+r.top-br.top-br.height*.35,behavior:'smooth'})}
+}
+function lpTap(){if(LP.ti>=LP.P.lines.length)return;LP.newT[LP.ti]=Math.max(0,+(LP.au.currentTime-.15).toFixed(2));LP.ti++;lpTapMsg()}
+function lpTapBack(){if(LP.ti<=LP.tapFrom)return;LP.ti--;const t=LP.newT[LP.ti];if(t!=null)LP.au.currentTime=Math.max(0,t-3);lpTapMsg()}
+function lpTapDone(){
+  const s=clone(lpSong());s.lyr.t=LP.newT.map(x=>x==null?null:x);s.lyr.f=LP.f;put('songs',LP.id,s);
+  LP.au.pause();LP.mode='play';if(LP.on){lpRender();toast('對拍存好了，點任何一句就從那句播')}
+}
+async function lpAct(a,t){
+  const s=lpSong();
+  switch(a){
+    case 'lp-close':closeLyr();break;
+    case 'lp-edit':LP.au.pause();if(LP.mode==='tap')lpTapDone();LP.mode='edit';lpRender();break;
+    case 'lp-edit-cancel':LP.mode='play';lpRender();break;
+    case 'lp-autosplit':{const ta=$('#lp-text'),ls=ta.value.split('\n').map(x=>x.trim()).filter(Boolean);ta.value=ls.map((l,i)=>(i&&i%4===0?'\n':'')+l).join('\n');break}
+    case 'lp-edit-save':{const txt=$('#lp-text').value.trim();if(!txt){toast('還沒有歌詞');return}
+      const n=clone(s),old=s.lyr||{};n.lyr={...old,text:txt,t:mapTimes(old.text,old.t,txt)};put('songs',LP.id,n);LP.mode='play';lpRender();
+      if(!n.lyr.t.some(x=>x!=null))toast('歌詞存好了。下一步按右上「對拍」，跟著音檔一句一句點');break}
+    case 'lp-tapmenu':{LP.au.pause();const T=lpTimes(),any=T.some(x=>x!=null),si=LP.cur>=0?LP.P.lines[LP.cur].sec:0;
+      if(!any){lpTapStart(0);break}
+      const ch=prompt('對拍要怎麼做？輸入數字：\n1 整首重對（從頭）\n2 從「'+LP.P.secs[si].name+'」開始改（前面不動）'+(s.lyr.prevT?'\n3 復原成上一次的對拍':''),'2');
+      if(ch==='1')lpTapStart(0);else if(ch==='2')lpTapStart(si);else if(ch==='3'&&s.lyr.prevT){const n=clone(s);[n.lyr.t,n.lyr.prevT]=[n.lyr.prevT,n.lyr.t];put('songs',LP.id,n);lpRender();toast('換回上一次的對拍')}
+      break}
+    case 'lp-tap':lpTap();break;
+    case 'lp-tapback':lpTapBack();break;
+    case 'lp-tapdone':lpTapDone();break;
+    case 'lp-play':{const au=LP.au;if(!au.src){toast('先加入音檔');return}if(au.paused){if(LP.loop)LP.loopSec=LP.cur>=0?LP.P.lines[LP.cur].sec:0;au.play().catch(()=>toast('播不出來，再點一次'))}else au.pause();break}
+    case 'lp-skip':lpSeek((LP.au.currentTime||0)+ +t.dataset.d);break;
+    case 'lp-mute':LP.mute=t.dataset.m==='1';LP.au.muted=LP.mute;$('#lyr').querySelectorAll('[data-act=lp-mute]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.m==='1')===LP.mute)));break;
+    case 'lp-loop':LP.loop=!LP.loop;LP.loopSec=LP.cur>=0?LP.P.lines[LP.cur].sec:0;t.setAttribute('aria-pressed',String(LP.loop));if(LP.loop)toast('重複「'+LP.P.secs[LP.loopSec].name+'」');break;
+    case 'lp-rate':{const R3=[1,.85,.7];LP.rate=R3[(R3.indexOf(LP.rate)+1)%R3.length];LP.au.playbackRate=LP.rate;t.textContent='速度 '+LP.rate+'×';break}
+    case 'lp-sec':{const i=+t.dataset.i,[st]=lpSecRange(i);if(LP.loop)LP.loopSec=i;if(st==null){toast('這段還沒對拍');return}lpSeek(st-.3,true);break}
+    case 'lp-line':{if(LP.mode==='tap'){lpTap();return}const j=+t.dataset.j,x=lpTimes()[j];if(x==null){toast('這句還沒對拍');return}if(LP.loop)LP.loopSec=LP.P.lines[j].sec;lpSeek(x-.5,true);break}
+  }
 }
 /* ---------- 演出歌單 ---------- */
 function vSetlist(s,id){
@@ -1383,7 +1571,10 @@ document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-act],[data-tab]');if(!t)return;
   if(t.dataset.tab){if(t.dataset.tab==='shows'&&tab==='shows')openShow=null;if(t.dataset.tab==='songs'&&tab==='songs')openSong=null;tab=t.dataset.tab;try{localStorage.setItem(LS+'-tab',tab)}catch(_){}render();window.scrollTo(0,0);return}
   const a=t.dataset.act,id=t.dataset.id;
+  if(a.startsWith('lp-')){if(LP.on)lpAct(a,t);return}
   switch(a){
+    case 'lyr-open':openLyr(id);break;
+    case 'lyr-edit':openLyr(id,true);break;
     case 'close':closeSheet();break;
     case 'save':{if(sheetSave&&sheetSave()===false)return;closeSheet();break}
     case 'open-show':openShow=id;showSeg='info';render();window.scrollTo(0,0);break;
@@ -1524,7 +1715,18 @@ document.addEventListener('input',e=>{
   if(e.target.id==='sc-lv'){SC.level=+e.target.value;SC.cur>=0?scPreview():(clearTimeout(scPvT),scPvT=setTimeout(scThumbs,150))}
   if(e.target.id==='rd-seek'){R.seeking=true;if(R.piano&&PZ.score){const N=PZ.score.measures.length;$('#rd-time').textContent='第 '+(1+Math.round(e.target.value/1000*(N-1)))+' / '+N+' 小節'}else if(AU.duration)$('#rd-time').textContent=fmtT(e.target.value/1000*AU.duration)+' / '+fmtT(AU.duration)}
 });
+document.addEventListener('change',e=>{if(LP.on&&e.target.id==='lp-track'){LP.au.pause();LP.f=e.target.value;LP.cur=-2;lpLoad().then(()=>lpRender())}});
+document.addEventListener('input',e=>{if(LP.on&&e.target.id==='lp-seek'&&LP.au.duration>0){LP.seeking=true;LP.au.currentTime=e.target.value/1000*LP.au.duration;LP.cur=-2;lpTick();LP.seeking=false}});
+document.addEventListener('pointerdown',e=>{if(LP.on&&LP.mode==='tap'&&e.target.closest('#lp-body')&&!e.target.closest('.lp-l')){e.preventDefault();lpTap()}});
+addEventListener('resize',()=>{if(LP.on&&LP.mode!=='edit'){LP.cur=-2;lpFit();lpTick()}});
 document.addEventListener('keydown',e=>{
+  if(LP.on){
+    if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName||'')&&e.key!=='Escape')return;
+    if(e.key==='Escape'){LP.mode==='edit'&&lpSong().lyr?lpAct('lp-edit-cancel'):closeLyr();return}
+    if(LP.mode==='tap'){if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();lpTap()}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();lpTapBack()}return}
+    if(e.key===' '){e.preventDefault();lpAct('lp-play')}
+    return;
+  }
   if(R.on){ // page-turn pedals send arrow or page keys
     if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName||'')&&e.key!=='Escape')return;
     if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();rdGo(1)}
